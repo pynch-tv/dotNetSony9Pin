@@ -1,4 +1,4 @@
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.SenseReturn;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 
 namespace Pynch.Sony9Pin.Core;
 

@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using lathoub;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.SystemControl;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 using System.Diagnostics;
 
 var master = new Sony9PinMaster();

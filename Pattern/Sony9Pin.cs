@@ -1,5 +1,5 @@
 ﻿using System.IO.Ports;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 
 namespace lathoub;
 

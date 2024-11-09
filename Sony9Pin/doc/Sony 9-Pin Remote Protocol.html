@@ -1,0 +1,1426 @@
+
+<!-- saved from url=(0078)https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title> Sony 9-Pin Remote Protocol </title>
+</head>
+<body><h1> Sony 9-Pin Remote Protocol </h1>
+<i> This is not the offical Sony 9-pin protocol.  It is a summary
+for reference puroposes only.  To obtain the protocol document,
+contact Sony directly. 
+</i><p><i>
+Updated 6/16/96.  Fixed the Prog Speed formula.  Added Tables.  Added
+all group 20 descriptions, more info on status bits, and most of
+the group 40 commands. 
+</i>
+
+</p><h2> Communication Format </h2>
+The protocol is based on the EIA RS-422-A signal standard, usually at
+38.4 kBit/s.  The data are sent as 1 start bit + 8 data bits + 1 parity
+bit + 1 stop bit.  Parity is odd: the bitwise sum of data bits 0 -7 and
+the parity bit is an odd number.
+<h2> Command Block Format </h2>
+The controlling device and the controlled device communicate through
+the interchange of command blocks.  The bytes in each command block
+are assigned as follows:
+<ul>
+<li> <b>CMD-1/DATA COUNT</b>.
+<b>CMD-1</b> is the upper 4 bits, <b>DATA COUNT</b> is the lower 4.
+</li><li> <b>CMD-2</b>.
+</li><li> <b>DATA-1</b> up to <b>DATA-N</b>,
+where n is the value in data count
+</li><li> <b>CHECKSUM</b>
+</li></ul>
+<p>
+</p><dl>
+<dt> <b>CMD-1</b>
+</dt><dd>
+Indicates the function and direction of the command, according to:
+<table border="3" cellspacing="2" cellpadding="2" width="54%">
+<tbody><tr><td>0</td><td>System control (Master-&gt;Slave)
+</td></tr><tr><td>1</td><td>Return for 0,2, or 4 of cmd-1 (Slave-&gt;Master)
+</td></tr><tr><td>2</td><td>Transport Control (Master-&gt;Slave)
+</td></tr><tr><td>4</td><td>Preset/Select control (Master-&gt;Slave)
+</td></tr><tr><td>6</td><td>Sense Request (Master-&gt;Slave)
+</td></tr><tr><td>7</td><td>Sense Return (Slave-&gt;Master)
+</td></tr></tbody></table>
+</dd><dt> <b>DATA COUNT</b>
+</dt><dd>
+Indicates the number of bytes ( max 15 ) inserted between <b>CMD-2</b>
+and <b>CHECKSUM</b>
+</dd><dt> <b>CMD-2</b>
+</dt><dd>
+Designates the command.  Refer to the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cmdtbl">command table</a>
+for definitions.
+Ex. <b>CMD-1</b>=0 and <b>CMD-2</b>=0C means LOCAL DISABLE.
+</dd><dt> <b>DATA-1</b> to <b>DATA-N</b>
+</dt><dd>
+Data which correspond to those indicated by the command. Refer to
+the command table for data formats.
+</dd><dt> <b>CHECKSUM</b>
+</dt><dd>
+Lower eight bits of the sum of the bytes in the command block.
+</dd></dl>
+<h2> Communication Protocol </h2>
+The protocol is initiated by the master.  The slave should return a
+response within 9 msec.  The response may be:
+<ul>
+<li> NAK + Error Data: Undefined command or communication error
+</li><li> COMMAND + Data: if Command requested data
+</li><li> ACK: if Command did not request data
+</li></ul>
+The master should not send another command until receiving a response
+from the slave device.  The master must also insure that no more than
+10 msec lapses between bytes in a command block. The master must
+immediatly stop sending data when it receives a NAK + Error Data message.
+If the Error Data contains "Undefined Command" the master may immediatley
+send another command, otherwise it must wait at least 10 msec before
+sending another command.  When the master does not receive a response
+from the slave within the 10 msec timeout, it may assume that communications
+have ceased and take appropriate measures.
+<h2> Cabling </h2>
+The pin assignments for the 9-pin cable are as follows:
+
+<table border="3" cellspacing="2" cellpadding="2" width="50%">
+<tbody><tr><th> Pin  </th><th>    Master  </th><th>   Slave
+</th></tr><tr><td>   1   </td><td> Ground      </td><td> Ground
+</td></tr><tr><td>   2   </td><td> Rcv A       </td><td> Xmit A
+</td></tr><tr><td>   3   </td><td> Xmit B      </td><td> Rcv B
+</td></tr><tr><td>   4   </td><td> Xmit Common </td><td> Rcv Common
+</td></tr><tr><td>   5   </td><td> Spare       </td><td> Spare
+</td></tr><tr><td>   6   </td><td> Rcv Common  </td><td> Xmit Common
+</td></tr><tr><td>   7   </td><td> Rcv B       </td><td> Xmit B
+</td></tr><tr><td>   8   </td><td> Xmit A      </td><td> Rcv A
+</td></tr><tr><td>   9   </td><td> Ground      </td><td> Ground
+</td></tr></tbody></table>
+<i> Auth -  this varies alot: contact individual manufacturers for pinouts. </i>
+<h2> <a name="cmdtbl"> Command Table </a></h2>
+<p>
+This is the command table for the DVR-2000/2100.  It is summarised here
+for reference purposes only.  If you want to order it from Sony call
+the Kansas City supply center and hope you get someone who knows the
+part number for the recorder whose protocol you want to use.
+<table border="3" cellspacing="2" cellpadding="2" width="96%">
+<tbody><tr><th></th><th>Command</th><th></th><th>Response
+</th></tr><tr><td>00 0C</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localDisable">Local Disable</a>              </td><td>10 01</td><td> Ack
+</td></tr><tr><td>00 11</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#deviceTypeRequest">Device Type Request</a></td><td> 12 11 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#deviceType">Device Type</a>
+</td></tr><tr><td>00 1D</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localEnable">Local Enable</a>      </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 00</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#stop">Stop</a>                     </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 01</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#play">Play</a>                     </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 02</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#record">Record</a>                 </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 04</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#standbyOff">Standby Off</a>                </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 05</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#standbyOn">Standby On</a>          </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 0F</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#eject">Eject</a>                   </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 10</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#fastFwd">Fast Fwd</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 11</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#jogFwd">Jog Fwd</a>                 </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 12</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#varFwd">Var Fwd</a>                 </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>2X 13</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#shuttleFwd">Shuttle Fwd</a>         </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 20</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#rewind">Rewind</a>                  </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 21</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#jogRev">Jog Rev</a>                 </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 22</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#varRev">Var Rev</a>                 </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 23</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#shuttleRev">Shuttle Rev</a>         </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 30</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#preroll">Preroll</a>                        </td><td> 10 01</td><td> Ack
+</td></tr><tr><td>24 31</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData">Cue up with Data</a> </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 34</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#syncPlay">Sync Play</a>                     </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>21 38</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#progSpeedPlay+">Prog Speed Play +</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>21 39</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#progSpeedPlay-">Prog Speed Play -</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 40</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#preview">Preview</a>                        </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 41</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#review">Review</a>                  </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 42</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#autoEdit">Auto Edit</a>                     </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 43</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outpointPreview">Outpoint Preview</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 54</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#antiClogTimerDisable">Anti-Clog Timer Disable</a>  </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>2X 55</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#antiClogTimerEnable">Anti-Clog Timer Enable</a>    </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>20 60 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#fullEEOff">Full EE Off</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 61</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#fullEEOn">Full EE On</a>            </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 63 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#selectEEOn">Select EE On</a>               </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 64</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editOff">Edit Off</a>                      </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 65 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editOn">Edit On</a>                        </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 6A </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#freezeOff">Freeze Off</a>          </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>20 6B</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#freezeOn">Freeze On</a>                    </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 00</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer1Preset">Timer-1 Preset</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 04</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timeCodePreset">Time Code Preset</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>44 05 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userBitPreset">User Bit Preset</a>         </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 08</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer1Reset">Timer-1 Reset</a>             </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 10</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inEntry">In Entry</a>                      </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 11</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outEntry">Out Entry</a>                    </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 12 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInEntry">Audio In Entry</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 13 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutEntry">Audio Out Entry</a>                 </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 14</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inDataPreset">In Data Preset</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 15</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outDataPreset">Out Data Preset</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 16</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInDataPreset">Audio In Data Preset</a>        </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>44 17</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutDataPreset">Audio Out Data Preset</a>      </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 18</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inPShift">In + Shift</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 19</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inMShift">In - Shift</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 1A</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outPShift">Out + Shift</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 1B </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outMShift">Out - Shift</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 1C </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInPShift">Audio In + Shift</a>                </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 1D </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutMShift">Audio In - Shift</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 1E </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutPShift">Audio Out + Shift</a>              </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 1F </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutMShift">Audio Out - Shift</a>      </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 20 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inFlagReset">In Flag Reset</a>             </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 21 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outFlagReset">Out Flag Reset</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 22 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInFlagReset">Audio In Flag Reset</a>  </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 23 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutFlagReset">Audio Out Flag Reset</a>        </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 24 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inRecall">In Recall</a>                    </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 25 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outRecall">Out Recall</a>          </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 26 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInRecall">Audio In Recall</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 27 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutRecall">Audio Out Recall</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 2D </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#lostLockReset">Lost Lock Reset</a>         </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X 30 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset">Edit Preset</a>                </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>44 31 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#prerollTimePreset">Preroll time preset</a> </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>41 32 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#tapeAutoSelect">Tape/Auto Select</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>41 33 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#servoRefSelect">Servo Ref Select</a>               </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>41 34 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#headSelect">Head Select</a>                </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>41 35 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#colorFrameSelect">Color Frame select</a>   </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>41 36 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timerModeSelect">Timer Mode Select</a>             </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>41 37 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inputCheck">Input Check</a>                </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>41 3A </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editFieldSelect">Edit Field Select</a>     </td><td>    10 01 </td><td> Ack
+</td></tr><tr><td>41 3B </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#freezeModeSelect">Freeze Mode Select</a>   </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>4X 3E </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#recordInhibit">Record Inhibit</a>          </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 40 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#autoModeOff">Auto Mode Off</a>             </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 41 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#autoModeOn">Auto Mode On</a>               </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 42 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#spotEraseOff">Spot Erase Off</a>           </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>40 43</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#spotEraseOn">Spot Erase On</a>             </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 44 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioSplitOff">Audio Split Off</a>         </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>40 45 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioSplitOn">Audio Split On</a>           </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X 98 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outputHPhase">Output H Phase</a>           </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>4X 9B </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outputVideoPhase">Output Video Phase</a>   </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>4X A0 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInputLevel">Audio Input Level</a>             </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X A1 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutputLevel">Audio Output Level</a>   </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X A2 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioAdvanceLevel">Audio Adv Level</a>             </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>4X A8 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutputPhase">Audio Output Phase</a>   </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>4X A9 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioAdvanceOutputPhase">Audio Adv Out Phase</a>   </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X AA </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#crossFadeTimePreset">Cross Fade Time Preset</a>    </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>4X B8 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localKeyMap">Local Key Map</a>             </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>42 F8 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#stillOffTime">Still Off time</a>           </td><td> 10 01</td><td>  Ack
+</td></tr><tr><td>42 FA </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#standbyOffTime">Stby Off time</a>          </td><td> 10 01 </td><td> Ack
+</td></tr><tr><td>61 0A </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#tCGenSense">TC Gen Sense</a>               </td><td> 74 08 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#genTimeData">Gen Time Data</a>
+</td></tr><tr><td></td><td></td><td>                                79 09</td><td>  <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#genUserBitsData"> Gen User Bits Data</a>
+</td></tr><tr><td></td><td> </td><td>
+</td></tr><tr><td></td><td></td><td>                        74 00</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer1Data">Timer-1 Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 01</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer2Data">Timer-2 Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 04 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#ltcTimeData">LTC Time Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 05 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userbitsLTCData">User Bits (LTC) Data</a>
+</td></tr><tr><td>61 0C</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#currentTimeSense">Current Time Sense</a></td><td>        74 06 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#vitcTimeData">VITC Time Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 07</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userbitsVITCData">User Bits (VITC) Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 14 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#correctedLTCTimeData">Corrected LTC Time Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 15</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdUserbitsLTCData">Hold User Bits (LTC) Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 16 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdVITCTimeData">Hold VITC Time Data</a>
+</td></tr><tr><td></td><td></td><td>                                74 17 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdUserbitsVITCData">Hold User Bits (VITC) Data</a>
+</td></tr><tr><td>60 10 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inDataSense">In Data Sense</a></td><td>          74 10</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inData">In Data</a>
+</td></tr><tr><td>60 11 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outDataSense">Out Data Sense</a></td><td>                74 11</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#outData">Out Data</a>
+</td></tr><tr><td>60 12 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInDataSense">Audio In Data Sense</a>   </td><td>74 12 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInData">Audio In Data</a>
+</td></tr><tr><td>60 13 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutDataSense">Audio Out Data Sense</a> </td><td>74 13 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioOutData">Audio Out Data</a>
+</td></tr><tr><td>61 20 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#statusSense">Status Sense</a>               </td><td>7X 20</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#statusData">Status Data</a>
+</td></tr><tr><td>61 21 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#extendedVTRStatus">Extended VTR Status</a>  </td><td>7X 21</td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#extendedStatusData">Extended Status Data</a>
+</td></tr><tr><td>62 23 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#signalControlSense">Signal Control Sense</a>        </td><td>7X 23 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#signalControlData">Signal Control Data</a>
+</td></tr><tr><td>6X 28 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localKeyMapSense">Local Key Map Sense</a>   </td><td>7X 28 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localKeyMap">Local Key Map</a>
+</td></tr><tr><td>61 2A </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#headMeterSense">Head Meter Sense</a>        </td><td>    7X 2A </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#headMeterData">Head Meter Data</a>
+</td></tr><tr><td>60 2B </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#remainingTimeSense">Remaining Time Sense</a>        </td><td>76 2B </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#remainingTime">Remaining Time</a>
+</td></tr><tr><td>60 2E </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cmdSpeedSense">Cmd Speed Sense</a>          </td><td>7X 2E </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cmdSpeedData">Cmd Speed Data</a>
+</td></tr><tr><td>61 30 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPresetSense">Edit Preset Sense</a>      </td><td>    7X 30</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPresetStatus">Edit Preset Status</a>
+</td></tr><tr><td>60 31 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#prerollTimeSense">Preroll Time Sense</a>    </td><td>74 31 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#prerollTime">Preroll Time</a>
+</td></tr><tr><td>60 36 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timerModeSense">Timer Mode Sense</a>        </td><td>    71 36 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timerModeStatus">Timer Mode Status</a>
+</td></tr><tr><td>60 3E </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#recordInhibitSense">Record Inhibit Sense</a>        </td><td>72 3E </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#recordInhibitStatus">Record Inhibit Status</a>
+</td></tr><tr><td>60 52 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dAInpEmphSense">DA Inp Emph Sense</a>       </td><td>    71 52 </td><td> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dAInputEmphasisData">DA Input Emphasis Data</a>
+</td></tr><tr><td>60 53 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dAPBEmphSense">DA PB Emph Sense</a> </td><td>    71 53 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dAPBEmphData">DA Playback Emphasis Data</a>
+</td></tr><tr><td>60 58 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dASampFreqSense">DA Samp. Freq. Sense</a>   </td><td>71 58 </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#dASampFreq">DA Sampling Frequency Data</a>
+</td></tr><tr><td>61 AA </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#crossFadeTimeSense">Cross Fade Time Sense</a>       </td><td>7X AA </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#CrossFadeTimeData">Cross Fade Time Data</a>
+</td></tr></tbody></table>
+</p><h2> Command Formats </h2>
+<dl>
+<dt>
+<b>00 0C <a name="localDisable"> Local Disable</a></b>
+</dt><dd>
+Disables operation of the slave device from its control panel.
+</dd><dt>
+<b>00 11 <a name="deviceTypeRequest"> Device Type Request</a></b>
+</dt><dd>
+Slave Responds with
+</dd><dt>
+<b>12 11 <a name="deviceType"> Device Type</a></b>
+</dt><dd>
+message, with 2 bytes of data:
+<br>
+<table border="3" cellspacing="2" cellpadding="2" width="40%">
+<tbody><tr><th>Model      </th><th>Data
+</th></tr><tr><td>BVU-800    </td><td>10 00
+</td></tr><tr><td>BVW-10     </td><td>2X 00
+</td></tr><tr><td>BVW-11     </td><td>2X 02
+</td></tr><tr><td>BVW-15     </td><td>2X 03
+</td></tr><tr><td>BVW-35     </td><td>2X 10
+</td></tr><tr><td>BVW-40     </td><td>2X 01
+</td></tr><tr><td>BVW-50     </td><td>2X 30
+</td></tr><tr><td>BVW-60     </td><td>2X 20
+</td></tr><tr><td>BVW-65     </td><td>2X 21
+</td></tr><tr><td>BVW-95     </td><td>2X 22
+</td></tr><tr><td>BVW-96     </td><td>2X 23
+</td></tr><tr><td>BVW-70     </td><td>2X 24
+</td></tr><tr><td>BVW-75     </td><td>2X 25
+</td></tr><tr><td>BVW-D75    </td><td>2X 46
+</td></tr><tr><td>BVW-9000   </td><td>2X 47
+</td></tr><tr><td>PVW-2600   </td><td>2X 40
+</td></tr><tr><td>PVW-2800   </td><td>2X 41
+</td></tr><tr><td>BVW-35PM   </td><td>20 18
+</td></tr><tr><td>BVW-65PM   </td><td>20 29
+</td></tr><tr><td>BVW-95PM   </td><td>20 2A
+</td></tr><tr><td>BVW-75PM   </td><td>20 2D
+</td></tr><tr><td>BVW-85P    </td><td>21 26
+</td></tr><tr><td>BVW-70S    </td><td>21 2C
+</td></tr><tr><td>BVW-75S    </td><td>21 2D
+</td></tr><tr><td>WBR-700    </td><td>21 2D
+</td></tr><tr><td>DVR-2000   </td><td>3X 10
+</td></tr><tr><td>DVR-2100   </td><td>3X 11
+</td></tr></tbody></table>
+<br>
+Where X=0 for NTSC/PAL-M (525) models and 1 for PAL/SECAM models.
+</dd><dt>
+<b> 00 1D <a name="localEnable"> Local Enable</a> </b>
+</dt><dd>
+Enable operation of slave device from local panel according to the
+local enable map set by the "4X B8" <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#localKeyMap"> Local Key Map</a>
+command.
+</dd><dt>
+<b>10 01 <a name="ack"> ACK</a></b>
+</dt><dd>
+Slave Sends this when it receives a command from Master.
+</dd><dt>
+<b>11 12 <a name="nak"> NAK</a></b>
+</dt><dd>
+When a communication error is detected, the slave sends this command with
+a "1" in the following position indicating the appropriate error condition:
+<table border="3" cellspacing="2" cellpadding="2" width="60%">
+<tbody><tr><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th></tr><tr><td>Time Out
+</td><td>Framing Error
+</td><td>Overrun Error
+</td><td>Parity Error
+</td><td>X
+</td><td>Checksum Error
+</td><td>X
+</td><td>Undefined command
+</td></tr></tbody></table>
+</dd><dt>
+<b>20 00 <a name="stop">Stop </a></b>
+</dt><dd>
+Slave stops current motion.
+</dd><dt>
+<b>20 01 <a name="play">Play </a></b>
+</dt><dd>
+Slave Starts to play from current location.   When the "Sync play"
+mode is selected from the System menu on the slave, "Play" has the
+same effect as 20.34 <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#syncPlay"> "Sync Play"</a>.
+</dd><dt>
+<b>20 02 <a name="record"> Record </a></b>
+</dt><dd>
+Slave begins recording.  Exactly what happens depends on Auto Mode,
+record lockout, and edit presets.
+</dd><dt>
+<b>20 04 <a name="standbyOff">Standby Off </a></b>
+</dt><dd>
+Turns off standby mode.  For VTR, this causes the machine
+to unthread in stop.  Affects EE/Tape selection. Available only
+in Stop mode.
+</dd><dt>
+<b>20 05 <a name="standbyOn">Standby On </a></b>
+</dt><dd>
+Turns on standby mode.  For VTR, this causes the machine
+to stay threaded when in stop.  Affects EE/Tape selection.
+</dd><dt>
+<b>20 0F <a name="eject">Eject</a></b>
+</dt><dd>
+When this command is received, the slave will eject the tape.
+</dd><dt>
+<b>20.10 <a name="fastFwd">Fast Fwd</a></b>
+</dt><dd>
+When this command is received, the slave device will run in
+fast forward mode.  The speed depends on the VTR; for the DVR2000
+series it is 50 x play speed.
+</dd><dt>
+<b>2X.11 <a name="jogFwd">Jog Forward</a></b>
+</dt><dt>
+<b>2X.12 <a name="varFwd">Var Forward</a></b>
+</dt><dt>
+<b>2X.13 <a name="shuttleFwd">Shuttle Forward</a></b>
+</dt><dd>
+When these commands are received the slave device will move forward
+with the speed indicated by DATA-1 and DATA-2.
+<p>
+When only DATA-1 is given, the speed wil be given by
+</p><pre>                Tape Speed = 10^((N/32)-2) x play speed.
+</pre>
+where N is the value of DATA-1.  Some sample values are:
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>Speed          </th><th>Speed Data
+</th></tr><tr><td>0.1           </td><td> 32  (20H)
+</td></tr><tr><td>1.0           </td><td> 64  (40H)
+</td></tr><tr><td>2.9           </td><td> 79  (4FH)
+</td></tr><tr><td>48.7          </td><td> 118  (76H)
+</td></tr></tbody></table>
+<p>
+When a more precise speed value is required, then DATA-2 will be added.
+The speed formula for this case is
+</p><pre>     Tape Speed = 10^((N/32)-2) + N'/256*(10^(((N+1)/32)-2)-10^((N/32)-2))
+</pre>
+<p>
+where N is the value of DATA-1 and N' is the value of DATA-2.
+</p><p>
+<i> auth - in more standard terms, the formula says that DATA-2 is used
+to linealy interpolate between the value given by N and that of
+N+1. </i>
+</p><p>
+The maximum jog speed is set in the System:System menu. The maximum Var speed
+is 3X play speed.  The maximum shuttle speed is 50X play speed.
+</p><p>
+<i> auth - There is considerable controversy over the minimum speed.
+For a speed value of 0, the above formula with only DATA-1 gives 10^-2,
+or .01 x play speed.  The standard states that when a speed between 0
+and the minumum is given, the slave moves at minimum speed.  In fact,
+many editors and control systems intend a "Shuttle 0" command ( 21 13 00 )
+to pause the device and have it
+stop without disengaging.  Devices which fail to do so will creep about
+1 frame/second in this situation.
+</i>
+</p><p>
+</p></dd><dt>
+<b>20 20 <a name="rewind">Rewind</a></b>
+</dt><dd>
+When it receives this command, the slave runs in reverse at maximum
+speed: on the DVR2000, this is 50xplay speed.
+</dd><dt>
+<b>2X 21 <a name="jogRev">Jog Rev</a></b>
+</dt><dt>
+<b>2X 22 <a name="varRev">Var Rev</a></b>
+</dt><dt>
+<b>2X 23 <a name="shuttleRev">Shuttle Rev</a></b>
+</dt><dd>
+When receiving one of the above commands, the slave will start running
+in accordance with the speed data defined by DATA-1 and DATA-2.  For the
+maximum and minimum speed see the 2X.12 <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#shuttleFwd"> Shuttle Fwd </a>
+command.
+</dd><dt>
+<b>20 30 <a name="preroll">Preroll</a></b>
+</dt><dd>
+When this command is received the slave will search to the preroll position
+defined as the value obtained by subtracting the preroll time set by the
+44.31 <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#prerollTimePreset"> Preroll Time Preset </a>command from
+the IN POINT data stored in the IN ENTRY memory by the 40.10
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#inEntry">In Entry</a> command.
+</dd><dt>
+<b>24 31 <a name="cueUpWithData">Cue Up With Data</a></b>
+</dt><dd>
+Cues the slave to the indicated time.  Time is formatted as follows:
+<pre>        data-1      data-2      data-3     data-4
+      | Frame | | Seconds | | minutes | | hours |
+      | 10  1 | |   10 1  | |   10 1  | | 10 1  |
+</pre>
+<i>
+auth - this is how time is represented in all commands and
+responses using a time code.  The numbers indicate that
+the 10s value is stored in the high nibble and the
+1s value in the low nibble.
+This is not to be confused with
+the 80-bit SMPTE timecode which is present in the analog
+timecode track on tape, or with the VITC timecode.
+</i>
+</dd><dt>
+<b>20 34 <a name="syncPlay">Sync Play</a></b>
+</dt><dd>
+Prerolls the slave for the preset preroll time, then enters play mode.
+</dd><dt>
+<b>21 38 <a name="progSpeedPlay+">Prog Speed Play +</a></b>
+</dt><dt>
+<b>21 39 <a name="progSpeedPlay-">Prog Speed Play -</a></b>
+</dt><dd>
+These commands play back the slave device in steps of 0.1% within
+the range of +/- 25.5% of play speed. DATA-1 contains an 8-bit speed
+value.  The deviation from nominal play speed is
+<pre>        Deviation(%)=0.1 x speed value
+</pre>
+</dd><dt>
+<b>20 40 <a name="preview">Preview</a></b>
+</dt><dt>
+<b>20 41 <a name="review">Review</a></b>
+</dt><dt>
+<b>20 42 <a name="autoEdit">Auto Edit</a></b>
+</dt><dd>
+When one of these commands is received the slave goes into the indicated
+mode.
+<p>
+<i> This is all the spec states here.  What actually happens is determined
+by the edit presets, in and out point selections, and ee/tape settings.
+Basically, all three set the device to the preroll position, and run at
+play speed up to the in point.  In Preview, the slave switches to EE mode
+at the in point, and out at the out point, simulating the edit without
+disturbing the recording media.  In review, the slave simply continues
+to play at the in point and rolls to the outpoint.  In Auto Edit, the
+channels indicated by the edit presets are put into record at the
+in point and the recoding proceeds to the out point.
+</i>
+</p></dd><dt>
+<b>20 43 <a name="outpointPreview">Outpoint Preview</a></b>
+</dt><dd>
+Sends transport to preset out point if insert mode is preset.
+</dd><dt>
+<b>2X 54 <a name="antiClogTimerDisable">Anti-Clog Timer Disable</a>     </b>
+</dt><dd>
+Disables the anti-clog timer.  This timer is responsible for unthreading
+the tape upon timeout to save wear on the heads.  If a system disables this
+timer, it should take responsibility for head wear avoidance itself.
+</dd><dt>
+<b>2X 55 <a name="antiClogTimerEnable">Anti-Clog Timer Enable</a></b>
+</dt><dd>
+Enables anti-clog timer.
+</dd><dt>
+<b>20 60 <a name="fullEEOff">Full EE Off</a></b>
+</dt><dd>
+Clears all channels from EE mode regardless of EDIT PRESET channels
+assigned by the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset"> 41.30 EDIT PRESET </a>
+command. It takes the slave 5 frames to perform this operation 
+after it receieves the command.
+</dd><dt>
+<b>20 61 <a name="fullEEOn">Full EE On</a></b>
+</dt><dd>
+Sets all channels to EE mode regardless of EDIT PRESET channels
+assigned by the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset"> 41.30 EDIT PRESET </a>
+command. It takes the slave 5 frames to perform this operation 
+after it receieves the command.
+</dd><dt>
+<b>20 63 <a name="selectEEOn">Select EE On</a></b>
+</dt><dd>
+This command sets only the preset channels assigned by
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset"> 41.30 Edit Preset </a> command to
+EE mode. The EE mode is cleared by the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editOff">
+20.64 Edit Off </a> command.
+It takes the slave 5 frames to perform this operation after
+receiving the command.
+</dd><dt>
+<b>20 64 <a name="editOff">Edit Off</a></b>
+</dt><dd>
+This command will stop recording without affecting the
+state of motion of the device. Any channels in record
+will come out in response to this command, after 5
+frames of delay.  This command also clears
+the Manual Edit Record mode and the Select EE mode.
+</dd><dt>
+<b>20 65 <a name="editOn">Edit On</a></b>
+</dt><dd>
+This command is used to actually initiate recording.  When
+the device is playing, and the edit presets set by the
+<a>4X 30 </a><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset">Edit Preset </a>
+command are in place, the preset channels will enter
+record a fixed delay after this command is received. 
+The slave will enter Edit Rec mode at this point.
+It takes the slave 5 frames to enter Edit Rec after 
+receiving this command.
+</dd><dt>
+<b>20 6A <a name="freezeOff">Freeze Off</a></b>
+</dt><dd>
+This command un-freezes the output of the device.
+</dd><dt>
+<b>20 6A <a name="freezeOn">Freeze On</a></b>
+</dt><dd>
+This command freezes the output of the device.  There is
+usually a 2-5 frame delay associcated with the actual freeze.
+</dd><dt>
+<b>44 00  <a name="timer1Preset">Timer-1 Preset</a></b>
+</dt><dd>
+Sets the Timer-1 value to the time code indicated by
+DATA-1 thru DATA-4. For the time format see the
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>44 04 <a name="timeCodePreset">Time Code Preset</a></b>
+</dt><dd>
+Sets the Time Code Generator value to the time code indicated by
+DATA-1 thru DATA-4. The data format is as per the
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command, 
+with two additional bits to indicate Color Frame and Drop Frame mode
+as follows:
+
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>Data-1 Bit 7 </th><th> CF </th><th> Data-1 Bit 6 </th><th> DF
+</th></tr><tr><td> 0 </td><td> Off </td><td> 0 </td><td> Off
+</td></tr><tr><td> 1 </td><td> On  </td><td> 1 </td><td> On
+</td></tr></tbody></table>
+
+</dd><dt>
+<b>44 05 <a name="userBitPreset">User Bit Preset</a></b>
+</dt><dd>
+This command presets the value given by DATA-1 through DATA-4
+to the User Bits of the Time Code Generator
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>DATA-1</th><th></th><th>DATA-2</th><th></th><th>DATA-3</th><th></th><th>DATA-4</th><th>
+</th></tr><tr><th>MSD</th><th>LSD</th><th>MSD</th><th>LSD</th><th>MSD</th><th>LSD</th><th>MSD</th><th>LSD
+</th></tr><tr><td>Bin Grp 2</td><td>Bin Grp 1</td><td>Bin Grp 4</td><td>Bin Grp 3</td><td>Bin Grp 6
+</td><td> Bin Grp 5</td><td>Bin Grp 8</td><td>Bin Grp 7
+</td></tr></tbody></table>
+</dd><dt>
+<b>40 08  <a name="timer1Reset">Timer-1 Reset</a></b>
+</dt><dd>
+Clears Tape timer 1 to 0
+</dd><dt>
+<b>40 10  <a name="inEntry">In Entry</a></b>
+</dt><dd>
+Sets the video in point to the value displayed on the slave.  This
+is the value of the selected tape timer.
+</dd><dt>
+<b>40 11 <a name="outEntry">Out Entry</a></b>
+</dt><dd>
+Sets the video out point to the value displayed on the slave.  This
+is the value of the selected tape timer.
+</dd><dt>
+<b>40 12 <a name="audioInEntry">Audio In Entry</a></b>
+</dt><dd>
+Sets the audio in point to the value displayed on the slave.  This
+is the value of the selected tape timer.
+</dd><dt>
+<b>40 13 <a name="audioOutEntry">Audio Out Entry</a></b>
+</dt><dd>
+Sets the audio out point to the value displayed on the slave.  This
+is the value of the selected tape timer.
+</dd><dt>
+<b>44 14 <a name="inDataPreset">In Data Preset</a></b>
+</dt><dd>
+Set the Video In Point to the value indicated by DATA-1 thru DATA-4.
+The time format is as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>44 15 <a name="outDataPreset">Out Data Preset</a></b>
+</dt><dd>
+Set the Video Out Point to the value indicated by DATA-1 thru DATA-4.
+The time format is as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>44 16 <a name="audioInDataPreset">Audio In Data Preset</a></b>
+</dt><dd>
+Set the Audio In Point to the value indicated by DATA-1 thru DATA-4.
+The time format is as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>44 17 <a name="audioOutDataPreset">Audio Out Data Preset</a></b>
+</dt><dd>
+Set the Audio Out Point to the value indicated by DATA-1 thru DATA-4.
+The time format is as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>40 18  <a name="inPShift">In + Shift</a></b>
+</dt><dd>
+Increments the Video in point by one frame.
+</dd><dt>
+<b>40 19  <a name="inMShift">In - Shift</a></b>
+</dt><dd>
+Decrements the Video in point by one frame.
+</dd><dt>
+<b>40 1A  <a name="outPShift">Out + Shift</a></b>
+</dt><dd>
+Increments the Video out point by one frame.
+</dd><dt>
+<b>40 1B  <a name="outMShift">Out - Shift</a></b>
+</dt><dd>
+Decrements the Video out point by one frame.
+</dd><dt>
+<b>40 1C  <a name="audioInPShift">Audio In + Shift</a></b>
+</dt><dd>
+Increments the Audio in point by one frame.
+</dd><dt>
+<b>40 1D  <a name="audioOutMShift">Audio In - Shift</a></b>
+</dt><dd>
+Decrements the Audio in point by one frame.
+</dd><dt>
+<b>40 1E  <a name="audioOutPShift">Audio Out + Shift</a></b>
+</dt><dd>
+Increments the Audio out point by one frame.
+</dd><dt>
+<b>40 1F  <a name="audioOutMShift">Audio Out - Shift</a> </b>
+</dt><dd>
+Decrements the Audio out point by one frame.
+</dd><dt>
+<b>40 20  <a name="inFlagReset">In Flag Reset</a></b>
+</dt><dt>
+<b>40 21  <a name="outFlagReset">Out Flag Reset</a></b>
+</dt><dt>
+<b>40 22  <a name="audioInFlagReset">Audio In Flag Reset</a></b>
+</dt><dt>
+<b>40 23  <a name="audioOutFlagReset">Audio Out Flag Reset</a></b>
+</dt><dd>
+Turn off the In Entry, Out Entry Audio In, and Audio Out lamps.
+<p>
+<i> auth - do these have any effect on the status bits? </i>
+</p><p>
+</p></dd><dt>
+<b>40 24  <a name="inRecall">In Recall</a></b>
+</dt><dt>
+<b>40 25  <a name="outRecall">Out Recall</a></b>
+</dt><dt>
+<b>40 26  <a name="audioInRecall">Audio In Recall</a></b>
+</dt><dt>
+<b>40 27  <a name="audioOutRecall">Audio Out Recall</a></b>
+</dt><dd>
+Turn on the In Entry, Out Entry Audio In, and Audio Out lamps.
+</dd><dt>
+<b>40 2D  <a name="lostLockReset">Lost Lock Reset</a></b>
+</dt><dd>
+Resets ( sets to 0 ) the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#lostLock"> Data-8/Bit-6 </a> Lost Lock 
+bit in the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#statusData"> 7X.20 status data </a>. The LOST LOCK
+staus will be set when the servo is unlocked in the Play, Rec,
+or Edit mode.  
+<p>
+</p></dd><dt>
+<b>4X 30 <a name="editPreset">Edit Preset </a></b>
+</dt><dd>
+This command is used for selecting the edit mode and selection of
+preset audio and video channels.  These values are used
+by the Edit On and Edit Off comands.
+<table border="3" cellspacing="2" cellpadding="2" width="60%">
+<tbody><tr><th>Byte</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th></tr><tr><td>DATA-1:
+</td><td>X</td><td>Insert</td><td>Assemble</td><td>Video</td><td>X</td><td>TC</td><td>A2 (Cue)</td><td>A1 (Cue)
+</td></tr><tr><td>DATA-2:
+</td><td>X</td><td>X</td><td>X</td><td>X</td><td>DA4</td><td>DA3</td><td>DA2</td><td>DA1
+</td></tr></tbody></table>
+when the 41.30 command is used, the audio channels are set as per
+the table in the Edit:Setup menu.  When the 42.30 command is used
+and Bit1 or Bit0 of Data-1 are "1", the Cue channel is selected.
+</dd><dt><b>44 31 <a name="prerollTimePreset">Preroll time preset</a></b>
+</dt><dd>
+Presets the preroll time given by DATA-1 thru DATA-4. Only the
+seconds digit int DATA-2 is used, and must be in the range of 0-59.  
+The time format is as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue Up With Data </a> command.
+</dd><dt>
+<b>41 32 <a name="tapeAutoSelect">Tape/Auto Select</a></b>
+</dt><dd>
+the Tape/EE mode is seleted by DATA-1 as follows:
+<pre><b> Data-1  Mode </b>
+-----------------
+00      Auto ( Tape/EE )
+01      Tape
+FF      Follows the mode set in the STATE MAP on the SYSTEM menu in Local.
+</pre>
+</dd><dt>
+<b>41 33 <a name="servoRefSelect">Servo Ref Select</a></b>
+</dt><dd>
+Selects the SERVO REFERENCE signal according to DATA-1:
+<pre><b> DATA-1  State </b>
+-----------------
+00      Auto
+01      External
+02      Input
+FF      Follows the mode set in REFERENCE on the SYSTEM:SYSTEM menu in Local.
+</pre>
+</dd><dt>
+<b>41 34 <a name="headSelect">Head Select</a></b>
+</dt><dd>
+<i> auth - this command is not implemented by the DVR2000, but many
+other systems use it to to select playback/record heads.  On the
+DVR2000 the selection is automatic. </i>
+</dd><dt>
+<b>41 35 <a name="colorFrameSelect">Color Frame select</a></b>
+</dt><dd>
+Sets the COLOR FRAME mode of the servo system according to DATA-1:
+<pre><b> DATA-1  State </b>
+-----------------
+01      2 Field
+02      4 Field
+03      8 Field
+FF      Follows the mode set in LOCK FIELD on the SYSTEM:SYSTEM menu in Local.
+</pre>
+</dd><dt>
+<b>41 36 <a name="timerModeSelect">Timer Mode Select</a></b>
+</dt><dd>
+Selects the TIMER system used in AUTO mode, and for display of the 
+IN ENTRY, OUT ENTRY, IN PRESET, OUT PRESET, PREROLL, and CUE UP WITH DATA,
+etc.  according to DATA-1:
+<pre><b> DATA-1  Mode </b>
+-----------------
+00      TIME CODE
+01      TIMER-1
+02      TIMER-2
+FF      Follows the mode set in F6:CRNT TM on the HOME menu in Local.
+</pre>
+</dd><dt>
+<b>41 37 <a name="inputCheck">Input Check</a></b>
+</dt><dd>
+Switches the INPUT CHECK mode on/off as per DATA-1:
+<pre><b> DATA-1 Mode </b>
+00    INPUT CHECK off
+01    INPUT signals sent out VIDEO and MONITOR AUDIO OUTPUT connectors.
+</pre>
+</dd><dt>
+<b>41 3A <a name="editFieldSelect">Edit Field Select</a></b>
+</dt><dd>
+Assigns the field on which to start the EDIT as per DATA-1:
+<pre>DATA-1   Mode
+-------------
+00               Field1/Field2: The edit will start on the field the command
+                 was received on 
+01       Field 1
+02       Field 2
+FF       Follows the mode set in F4:TIMING on the EDIT SETUP menu in Local.
+</pre>
+The following commands use the field selection:
+<ul>
+<li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#fullEEOff"> 20.60 Full EE Off </a>
+</li><li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#fullEEOn"> 20.61 Full EE On </a>
+</li><li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#selectEEOn"> 20.63 Select EE On </a>
+</li><li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editOff"> 20.64 Edit Off </a>
+</li><li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editOn"> 20.65 Edit On </a>
+</li><li> <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#editPreset"> 4X.30 Edit Preset </a>
+</li></ul>
+</dd><dt>
+<b>41 3B <a name="freezeModeSelect">Freeze Mode Select</a></b>
+</dt><dd>
+Assigns the contents of the freeze picture to be field or frame
+as per DATA-1:
+<pre>DATA-1  Mode
+------------
+00      Field-1 or Field-2 ( not fixed )
+01      Field 1
+10      Field 2
+11      Frame
+</pre>
+</dd><dt>
+<b>4X 3E <a name="recordInhibit">Record Inhibit</a></b>
+</dt><dd>
+</dd><dt>
+<b>40 40 <a name="autoModeOff">Auto Mode Off</a></b>
+</dt><dt>
+<b>40 41 <a name="autoModeOn">Auto Mode On</a></b>
+</dt><dd>
+These commands switch the AUTO mode off and on.
+</dd><dt>
+<b>40 42 <a name="spotEraseOff">Spot Erase Off</a></b>
+</dt><dt>
+<b>40 43 <a name="spotEraseOn">Spot Erase On</a></b>
+</dt><dd>
+These commands switch the spot erase mode off and on.
+</dd><dt>
+<b>40 44 <a name="audioSplitOff">Audio Split Off</a></b>
+</dt><dt>
+<b>40 45 <a name="audioSplitOn">Audio Split On</a></b>
+</dt><dd>
+These commands switch the audio split mode off and on.
+</dd><dt>
+<b>4X 98 <a name="outputHPhase">Output H Phase</a></b>
+</dt><dd>
+Sets the output Horizontal phase.  The 40.98 command sets
+the H Phase to 0, whereas the 41.98 command sets the
+H phase according to
+<pre>        H Phase = DATA_1 * 148 nsec
+</pre>
+where DATA_1 is interpreted as a twos complement binary 
+number in the range of -127 to 127.
+</dd><dt>
+<b>4X 9B <a name="outputVideoPhase">Output Video Phase</a></b>
+</dt><dd>
+Sets the output sync phase. The 40.9B command sets the
+output sync phase to 0 whereas the 41.9B command sets the
+output sync phase according to
+<pre>        Sync Phase = DATA_1 * 74 nsec
+</pre>
+where DATA_1 is interpreted as a twos complement binary 
+number in the range of -127 to 127.
+</dd><dt>
+<b>4X A0 <a name="audioInputLevel">Audio Input Level</a></b>
+</dt><dd>
+Controls the audio input level.  The control mode is assigned by bit
+7 of DATA-1. , and the channel to be controled is assigned by
+bit 6 to bit 0 of DATA-1.  When the 41 A0 command is received, the
+audio input levels of the channels assigned by DATA-1 will be
+set to their reference levels. When CMDLEN is not 1, the
+level data will be composed of two bytes per <i> assigned </i> channel in the
+order DA1, DA2, DA3, DA4, CUE. The DATA-1 bits look like:
+<br>
+<br>
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>Bit</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th></tr><tr><th>Value</th><td>Mode</td><td>X</td><td>X</td><td>Cue</td><td>DA4</td><td>DA3</td><td>DA2</td><td>DA1
+</td></tr></tbody></table>
+<br>
+For Example, when the DATA-1 is 0x11, the command looks like:
+<br>
+<br>
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>DATA-1</th><th>DATA-2</th><th>DATA-3</th><th>DATA-4</th><th>DATA-5
+</th></tr><tr><td>11</td><td>DA1 LSB</td><td>DA1 MSB</td><td>CUE LSB</td><td>CUE MSB
+</td></tr></tbody></table>
+<br>
+The level data are interpreted as per the formula:
+<pre>Input Level = 20 log [(Level Data)/(4000h)] (dB)
+</pre>
+Which gives coverage over the range of +12dB to -infinity.
+</dd><dt>
+<b>4X A1 <a name="audioOutputLevel">Audio Output Level</a></b>
+</dt><dd>
+Controls the audio output level.  When the 41 A1 command
+is received, the audio output level of the channels
+selected in DATA-1 will be set to the reference level.  
+Otherwise, it operates as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInputLevel"> 4X.A0 Audio input level </a>command.
+</dd><dt>
+<b>4X A2 <a name="audioAdvanceLevel">Audio Adv Level</a></b>
+</dt><dd>
+Controls the audio advance level.  When the 41 A2 
+<i> fixed doc error here </i> command
+is received, the audio advance level  of the channels selectd
+by DATA-1 will be set to the reference level.   
+Otherwise, it operates as per the 
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#audioInputLevel"> 4X.A0 Audio input level </a>command.
+</dd><dt>
+<b>4X A8 <a name="audioOutputPhase">Audio Output Phase</a></b>
+</dt><dd>
+Sets the autdio output phase.  The 42.A8 command determines the
+audio output phase according to the 16-bit value encoded with
+the low byte in DATA-1 and the high byte in DATA-2.  The values
+are interpreted as 2s complement binary, and currently have
+a range of +/- 80 samples. When the 40.A8 command is received,
+the slave will set the audio ouput phase to its nominal value.
+</dd><dt>
+<b>4X A9 <a name="audioAdvanceOutputPhase">Audio Adv Out Phase</a></b>
+</dt><dd>
+Sets the Advance audio output phase.  The 42.A9 command determines
+the audio advance phase according to the 16-bit value encoded with
+the low byte in DATA-1 and the high byte in DATA-2.  The values
+are interpreted as 2s complement binary, and currently have
+a range of +0/-50 samples.  the 40.A9 will set the audio advance
+phase to its nominal value.
+</dd><dt>
+<b>4X AA <a name="crossFadeTimePreset">Cross Fade Time Preset</a></b>
+</dt><dd>
+</dd><dt>
+<b>4X B8 <a name="localKeyMap"> Local Key Map</a></b>
+</dt><dd>
+When the slave receives the 00.1D Local Enable command, the control
+panel may be used according to the local key map that was set by
+this command. When the slave receives the 00.0C Local Disable command
+all the keys, buttons, and adjustment controls on the control panel
+are disabled. The Eject button can always be used.  If the slave receives
+the 41.B8 command, the local key map is preset by the block level
+in accordance with DATA-1.  IF it receives the 4X.B8 command ( X &gt; 2 )
+The local key map is preset by the Switch level.
+<p>
+Block Level switches:
+</p><hr>
+<pre>        Bit 7 Bit 6 Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
+                          Tracking Monitor  Audio   Video Transport
+                          Control  Control Control Control Control
+
+"1": This function will be enabled when in remote
+"0": This function will be disabled in remote.
+</pre>
+<p>
+When DATA-2 or more are added, control data with two bytes
+per each block assigned by DATA-1 are added following DATA-1.
+</p><p>
+At present the transport switches are defined as follows:
+</p><hr>
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>Bit</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th></tr><tr><th>1st Byte</th><td>Execute</td><td>Preroll</td><td>Search</td><td></td><td>Rec</td><td>Play</td><td>Stop</td><td>Standby
+</td></tr><tr><th>2nd Byte</th><td></td><td></td><td></td><td></td><td></td><td>Var</td><td>Jog</td><td>Shuttle
+</td></tr></tbody></table>
+<p>
+None of the other blocks have any switches assigned, but rather
+operate as follows:
+</p><p>
+Video Control: Video phase and Sync phase can be adjusted on the
+system menu in remote mode.
+</p><p>
+Audio Control: Audio levels and output phase can be adjusted
+on the Audio:DA out menu in remote mode.
+</p><p>
+Monitor Control: the wfm monitor output selection on the system:wfm
+monitor menu and the montior level adjustments and monitor out selection
+on the system:audio monitor menu can be adjusted in remote mode.
+</p><p>
+Tracking Control: Tracking adjustments in the system:tracking
+menu can be made in remote mode.
+</p></dd><dt>
+<b>42 F8 <a name="stillOffTime">Still Off time</a></b>
+</dt><dd>
+</dd><dt>
+<b>42 FA <a name="standbyOffTime">Standby Off time</a></b>
+</dt><dd>
+</dd><dt><b>61 0A <a name="tCGenSense">TC Gen Sense</a></b>
+</dt><dd>
+</dd><dt><b>60 10 <a name="inDataSense">In Data Sense</a></b>
+</dt><dd>
+</dd><dt><b>60 11 <a name="outDataSense">Out Data Sense</a></b>
+</dt><dd>
+</dd><dt><b>60 12 <a name="audioInDataSense">Audio In Data Sense</a></b>
+</dt><dd>
+</dd><dt><b>60 13 <a name="audioOutDataSense">Audio Out Data Sense</a></b>
+</dt><dd>
+</dd><dt><b>61 0C <a name="currentTimeSense">Current Time Sense</a></b>
+</dt><dd>
+Requests the TIME DATA or USER BITS.  Slave responds as per DATA-1:
+<pre>      Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
+                       VITC    LTC   TIMER 2 TIMER 1   VITC   LTC 
+                        UB      UB                     TIME   TIME
+</pre>
+That is to say that the response follows the bit set in DATA-1
+as per the following table
+
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>Reqest             </th><th>Response
+</th></tr><tr><td>DATA-1=01 LTC TIME </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#ltcTimeData"> 74.04: LTC TIME DATA </a>
+</td></tr><tr><td>                   </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#correctedLTCTimeData"> 74.14: CORRECTED LTC TIME DATA </a>
+</td></tr><tr><td>DATA-1=02 VITC TIME</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#vitcTimeData"> 74.06: VITC TIME DATA </a>
+</td></tr><tr><td>                   </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdVITCTimeData"> 74.16: HOLD VITC TIME DATA </a>
+</td></tr><tr><td>DATA-1=04 TIMER-1  </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer1Data"> 74.00: TIMER-1 DATA </a>
+</td></tr><tr><td>DATA-1=08 TIMER-2  </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#timer2Data"> 74.01: TIMER-2 DATA </a>
+</td></tr><tr><td>DATA-1=10 LTC UB   </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userbitsLTCData"> 74.05: UB (LTC) DATA </a>
+</td></tr><tr><td>                   </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdUserbitsLTCData"> 74.15: HOLD UB (LTC) DATA </a>
+</td></tr><tr><td>DATA-1=20 VITC UB  </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userbitsVITCData"> 74.07: UB (VITC) DATA </a>
+</td></tr><tr><td>                   </td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#holdUserbitsVITCData"> 74.17: HOLD UB (VITC) DATA </a>
+</td></tr></tbody></table> 
+<br>
+<i>
+Now, when requesting timecode, the results depend on the tape speed
+because at very low speeds ( less than .25 play speed ) it may 
+not be possible to recover timecode.  However, if VITC is present,
+that may be used instead.  To automate this decision process, Sony has
+provided the special 61.0C.03 command which will return the best source
+of time code as per the table below.  Note that when both LTC and VITC
+are not good you get back the 74.14 corrected LTC data.  In this case,
+the time is actually the last good LTC time corrected by the tape
+timer.  
+</i>
+<br>
+<br>
+<b> Tape speed &gt; .25 </b>
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>LTC Status</th><th>VITC Status</th><th>Return Data</th><th>Return code
+</th></tr><tr><td>OK</td><td>OK</td><td>LTC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#ltcTimeData">74.04 XX XX XX XX </a>
+</td></tr><tr><td>NG</td><td>OK</td><td>VITC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#vitcTimeData">74.06 XX XX XX XX </a>
+</td></tr><tr><td>OK</td><td>NG</td><td>LTC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#ltcTimeData">74.04 XX XX XX XX </a>
+</td></tr><tr><td>NG</td><td>NG</td><td>LTC(*)</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#correctedLTCTimeData">74.14 XX XX XX XX </a>
+</td></tr></tbody></table>
+<br>
+<b> Tape speed &lt; .25 </b>
+<table border="3" cellspacing="2" cellpadding="2">
+<tbody><tr><th>LTC Status</th><th>VITC Status</th><th>Return Data</th><th>Return code
+</th></tr><tr><td>OK</td><td>OK</td><td>VITC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#vitcTimeData">74.06 XX XX XX XX </a>
+</td></tr><tr><td>NG</td><td>OK</td><td>VITC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#vitcTimeData">74.06 XX XX XX XX </a>
+</td></tr><tr><td>OK</td><td>NG</td><td>LTC</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#ltcTimeData">74.04 XX XX XX XX </a>
+</td></tr><tr><td>NG</td><td>NG</td><td>LTC(*)</td><td><a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#correctedLTCTimeData">74.14 XX XX XX XX </a>
+</td></tr></tbody></table>
+
+</dd><dt>
+<b>61 20 <a name="statusSense">Status Sense</a></b>
+</dt><dd>
+When the slave receives a 61.20 Status Sense command, it will
+respond with a <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#statusData">74 20 Status Data </a>
+response.  The starting
+byte number and number of bytes requested are encoded in
+DATA-1, with the starting reg in the high nibble (bits 7-4) and
+the requested byte count in the low nibble ( bits 3-0 ).
+</dd><dt><b>61 21 <a name="extendedVTRStatus">Extended VTR Status</a></b>
+</dt><dd>
+</dd><dt><b>62 23 <a name="signalControlSense">Signal Control Sense</a>      </b>
+</dt><dd>
+</dd><dt><b>6X 28 <a name="localKeyMapSense">Local Key Map Sense</a> </b>
+</dt><dd>
+</dd><dt><b>61 2A <a name="headMeterSense">Head Meter Sense</a>      </b>
+</dt><dd>
+</dd><dt><b>60 2B <a name="remainingTimeSense">Remaining Time Sense</a>      </b>
+</dt><dd>
+</dd><dt><b>60 2E <a name="cmdSpeedSense">Cmd Speed Sense</a>                </b>
+</dt><dd>
+</dd><dt><b>61 30 <a name="editPresetSense">Edit Preset Sense</a>    </b>
+</dt><dd>
+</dd><dt><b>60 31 <a name="prerollTimeSense">Preroll Time Sense</a>  </b>
+</dt><dd>
+</dd><dt><b>60 36 <a name="timerModeSense">Timer Mode Sense</a>      </b>
+</dt><dd>
+</dd><dt><b>60 3E <a name="recordInhibitSense">Record Inhibit Sense</a>      </b>
+</dt><dd>
+</dd><dt><b>60 52 <a name="dAInpEmphSense">DA Inp Emph Sense</a>     </b>
+</dt><dd>
+</dd><dt><b>60 53 <a name="dAPBEmphSense">DA PB Emph Sense</a>       </b>
+</dt><dd>
+</dd><dt><b>60 58 <a name="dASampFreqSense">DA Samp. Freq. Sense</a> </b>
+</dt><dd>
+</dd><dt><b>61 AA <a name="crossFadeTimeSense">Cross Fade Time Sense</a>     </b>
+</dt><dd>
+</dd><dt><b>74 00 <a name="timer1Data">Timer-1 Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the timer-1 data formatted as per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue up with data </a> command
+</dd><dt><b>74 01 <a name="timer2Data">Timer-2 Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the timer-2 data formatted as per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue up with data </a> command
+</dd><dt><b>74 04 <a name="ltcTimeData">LTC Time Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the LTC data formatted as per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue up with data </a> command
+</dd><dt><b>74 05 <a name="userbitsLTCData">User Bits (LTC) Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the LTC User bits data formatted at per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userBitPreset"> 44.05 User Bit Preset </a> command.
+</dd><dt><b>74 06 <a name="vitcTimeData">VITC Time Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the VITC data formatted as per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue up with data </a> command
+</dd><dt><b>74 07 <a name="userbitsVITCData">User Bits (VITC) Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the VITC User bits data formatted at per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userBitPreset"> 44.05 User Bit Preset </a> command.
+</dd><dt><b>74 08 <a name="genTimeData">Gen Time Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the Time code generator data formatted as per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#cueUpWithData"> 24.31 Cue up with data </a> command
+</dd><dt><b>79 09 <a name="genUserBitsData"> Gen User Bits Data</a></b>
+</dt><dd>
+DATA-1 thru DATA-4 contain the Time code generator User bits 
+data formatted at per
+the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#userBitPreset"> 44.05 User Bit Preset </a> command.
+</dd><dt><b>74 10 <a name="inData">In Data</a></b>
+</dt><dd>
+</dd><dt><b>74 11 <a name="outData">Out Data</a></b>
+</dt><dd>
+</dd><dt><b>74 12 <a name="audioInData">Audio In Data</a></b>
+</dt><dd>
+</dd><dt><b>74 13 <a name="audioOutData">Audio Out Data</a></b>
+</dt><dd>
+</dd><dt><b>74 14 <a name="correctedLTCTimeData">Corrected LTC Time Data</a></b>
+</dt><dd>
+</dd><dt><b>74 15 <a name="holdUserbitsLTCData">Hold User Bits (LTC) Data</a></b>
+</dt><dd>
+</dd><dt><b>74 16 <a name="holdVITCTimeData">Hold VITC Time Data</a></b>
+</dt><dd>
+</dd><dt><b>74 17 <a name="holdUserbitsVITCData">Hold User Bits (VITC) Data</a></b>
+</dt><dd>
+</dd><dt>
+<b> 74 20 <a name="statusData">Status Data</a></b>
+</dt><dd>
+When the slave receives a 61.20 Status Sense command, the following
+data will be sent back in response according to the request:
+<table border="3" cellspacing="2" cellpadding="2" width="96%">
+<tbody><tr><th>Byte No. </th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th></tr><tr>
+<td>0
+</td><td>X
+</td><td>X
+</td><td>Tape Out
+</td><td>Servo Ref Missing
+</td><td>X
+</td><td>X
+</td><td>X
+</td><td> Local
+</td></tr><tr>
+<td>1
+</td><td>Standby
+</td><td>X
+</td><td>Stop
+</td><td>Eject
+</td><td>Rewind
+</td><td>Fast Fwd
+</td><td>Record
+</td><td>Play
+</td></tr><tr>
+<td>2
+</td><td> Servo Lock
+</td><td>TSO Mode
+</td><td> Shuttle
+</td><td>Jog
+</td><td> Var
+</td><td> Tape Dir
+</td><td>Still
+</td><td>Cue Up
+</td></tr><tr>
+<td>3
+</td><td> Auto Mode
+</td><td> Freeze On
+</td><td> X
+</td><td> CF Mode
+</td><td>A Out
+</td><td>A In
+</td><td>Out
+</td><td>In
+</td></tr><tr>
+<td>4
+</td><td> Select EE
+</td><td> Full EE
+</td><td> X
+</td><td> Edit
+</td><td> Review
+</td><td> Auto Edit
+</td><td> Preview
+</td><td> Preroll
+</td></tr><tr>
+<td>5
+</td><td>X
+</td><td>Insert
+</td><td>Assemble
+</td><td>Video
+</td><td>A4
+</td><td>A3
+</td><td>A2
+</td><td>A1
+</td></tr><tr>
+<td>6
+</td><td>X
+</td><td>Lamp Still
+</td><td>Lamp Fwd
+</td><td>Lamp Rev
+</td><td>Srch LED 8
+</td><td>Srch LED 4
+</td><td>Srch LED 2
+</td><td>Srch LED 1
+</td></tr><tr>
+<td>7
+</td><td>X
+</td><td>X
+</td><td>Aud Split
+</td><td>Sync Act
+</td><td>X
+</td><td>Spot Erase
+</td><td>X
+</td><td>In/Out
+</td></tr><tr>
+<td>8
+</td><td>Buzzer
+</td><td> Lost lock
+</td><td>Near EOT
+</td><td>EOT
+</td><td>CF Lock
+</td><td>Svo Alarm
+</td><td>Sys Alarm
+</td><td>Rec Inhib
+</td></tr><tr>
+<td>9
+</td><td>Fnc Abort
+</td><td>X
+</td><td>X
+</td><td>X
+</td><td>X
+</td><td>X
+</td><td>X
+</td><td>X
+</td></tr></tbody></table>
+<p>
+<b> Description of Bits: </b>
+</p><dl>
+<dt>
+Data 0:
+        </dt><dd>
+        <ul>
+        <li> Bit 5: Tape Unthreaded (Cassette Out)
+                When the tape is threaded, this is 0.  When it is completely
+                unthreaded this is 1.  When threading or unthreading, who
+                knows what it is.
+        </li><li> Bit 4: Servo Ref Missing
+                When servo reference is absent this is 1.
+        </li><li> Bit 0: Local
+                When remote operation is inhibited by the "remote/local" switch
+                on the panel this is 1.
+        </li></ul>
+</dd><dt>
+Data 1:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Standby
+                When the tape is threaded and the scanner is locked but the tape
+                is stopped, this is 1.
+        </li><li> Bit 5: Stop
+                When the machine is in full stop, this is 1.  The thread state
+                depends on the tape/ee and standby settings.
+        </li><li> Bit 4: Eject
+                When the tape is ejecting this is 1.
+        </li><li> Bit 3: Rewind
+                When the machine is in fast reverse this is 1.
+        </li><li> Bit 2: Fast Fwd
+                When the machine is in fast forward this is 1.
+        </li><li> Bit 1: Record
+                This bit goes from 0 to 1 some number of frames after
+                the machine starts recording.   For the DVR2000 we
+                measured 5 frames. Others have varying delays on the
+                record status.
+        </li><li> Bit 0: Play
+                This bit goes from 0 to 1 some number of frames after
+                the machine starts playing.   For the DVR2000 we
+                measured 5 frames. Others have varying delays on the
+                play status.
+        </li></ul>
+</dd><dt>
+Data 2:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Servo Lock
+                1 indicates servos are locked.   This is a necessary condition
+                for an edit to occur correctly.
+        </li><li> Bit 6: TSO Mode
+                Bit is 1 in tape speed override: in this mode, audio and
+                video are still locked though speed is off play speed by
+                +/- up to 15%.
+        </li><li> Bit 5: Shuttle
+        </li><li> Bit 4: Jog
+        </li><li> Bit 3: Var
+        </li><li> Bit 2: Tape Dir
+        </li><li> Bit 1: Still
+        </li><li> Bit 0: Cue Up
+        </li></ul>
+</dd><dt>
+Data 3:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Auto Mode
+        </li><li> Bit 6: Freeze On
+        </li><li> Bit 4: CF Mode
+        </li><li> Bit 3: A Out 
+        </li><li> Bit 2: A In
+        </li><li> Bit 1: Out
+        </li><li> Bit 0: In
+        </li></ul>
+</dd><dt>
+Data 4:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Select EE
+        </li><li> Bit 6: Full EE
+        </li><li> Bit 4: Edit
+        </li><li> Bit 3: Review
+        </li><li> Bit 2: Auto Edit
+        </li><li> Bit 1: Preview
+        </li><li> Bit 0: Preroll
+        </li></ul>
+</dd><dt>
+Data 5:
+        </dt><dd>
+        <ul>
+        <li> Bit 6: Insert
+        </li><li> Bit 5: Assemble
+        </li><li> Bit 4: Video
+        </li><li> Bit 3: A4
+        </li><li> Bit 2: A3
+        </li><li> Bit 1: A2
+        </li><li> Bit 0: A1
+        </li></ul>
+</dd><dt>
+Data 6:
+        </dt><dd>
+        <ul>
+        <li> Bit 6: Lamp Still
+        </li><li> Bit 5: Lamp Fwd
+        </li><li> Bit 4: Lamp Rev
+        </li><li> Bit 3: Srch LED 8
+        </li><li> Bit 2: Srch LED 4
+        </li><li> Bit 1: Srch LED 2
+        </li><li> Bit 0: Srch LED 1
+        </li></ul>
+</dd><dt>
+Data 7:
+        </dt><dd>
+        <ul>
+        <li> Bit 5: Aud Split
+        </li><li> Bit 4: Sync Act
+        </li><li> Bit 2: Spot Erase
+        </li><li> Bit 0: In/Out
+        </li></ul>
+</dd><dt>
+Data 8:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Buzzer
+        </li><li> <a name="lostLock"> Bit 6: Lost lock </a>
+        This bit is controled by the <a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage/s9pin.html#lostLockReset"> Lost Lock
+        Reset </a> command.  It is set when the servos are unlocked in
+        the PLAY, REC, or EDIT modes.
+        </li><li> Bit 5: Near EOT
+        </li><li> Bit 4: EOT
+        </li><li> Bit 3: CF Lock
+        </li><li> Bit 2: Svo Alarm
+        </li><li> Bit 1: Sys Alarm
+        </li><li> Bit 0: Rec Inhib
+        </li></ul>
+</dd><dt>
+Data 9:
+        </dt><dd>
+        <ul>
+        <li> Bit 7: Fnc Abort
+        </li></ul>
+</dd></dl>
+<hr>
+<i> auth - here's a code snippet for you c-heads. </i>
+<pre>char *StatusBitStrings[][8] =
+{
+        // Data 0
+        {"         ","          ","Unthread  ","Svo Ref   ",
+         "          ","          ","          ","Local     "},
+        // Data 1
+        {"Standby   ","          ","Stop      ","Eject     ",
+         "Rewind    ","Fast Fwd  ","Record    ","Play      "},
+        // Data 2
+        {"Servo Lock","TSO Mode  ","Shuttle   ","Jog       ",
+         "Variable  ","Tape Rev  ","Still     ","Cue       "},
+        // Data 3
+        {"Auto Mode ","Freeze On ","          ","CF Mode   ",
+         "A Out     ","A In      ","Out       ","In        "},
+        // Data 4
+        {"Select EE ","Full EE   ","          ","Edit      ",
+         "Review    ","Auto Edit ","Preview   ","Preroll   "},
+        // Data 5
+        {"          ","Insert    ","Assemble  ","Video     ",
+         "A4        ","A3        ","A2        ","A1        "},
+        // Data 6
+        {"          ","Lamp Still","Lamp Fwd  ","Lamp Rev  ",
+         "Srch LED 8","Srch LED 4","Srch LED 2","Srch LED 1"},
+        // Data 7
+        {"          ","          ","Aud Split ","Sync Act  ",
+         "          ","Spot Erase","          ","In/Out    "},
+        // Data 8
+        {"Buzzer    ","Lost lock ","Near EOT  ","EOT       ",
+         "CF Lock   ","Svo Alarm ","Sys Alarm ","Rec Inhib "},
+        // Data 9
+        {"Fnc Abort ","          ","          ","          ",
+         "          ","          ","          ","          "},
+};
+</pre>
+<hr>
+</dd></dl>
+
+<p>
+The Status bits communicate much about the progress of a
+motion command.   The precise timing of each signal varies
+almost from machine to machine, and many edit controlers
+expect certain timing behaviour of these signals. Herein
+lie many of the problems associated with edit controllers,
+edit timing, and just plain wacky transport behavior.
+</p><dt><b>7X 21 <a name="extendedStatusData">Extended Status Data</a></b>
+</dt><dd>
+</dd><dt><b>7X 23 <a name="signalControlData">Signal Control Data</a></b>
+</dt><dd>
+</dd><dt><b>7X 28 <a name="localKeyMap">Local Key Map</a></b>
+</dt><dd>
+</dd><dt><b>7X 2A <a name="headMeterData">Head Meter Data</a></b>
+</dt><dd>
+</dd><dt><b>76 2B <a name="remainingTime">Remaining Time</a></b>
+</dt><dd>
+</dd><dt><b>7X 2E <a name="cmdSpeedData">Cmd Speed Data</a></b>
+</dt><dd>
+</dd><dt><b>7X 30 <a name="editPresetStatus">Edit Preset Status</a></b>
+</dt><dd>
+</dd><dt><b>74 31 <a name="prerollTime">Preroll Time</a></b>
+</dt><dd>
+</dd><dt><b>71 36 <a name="timerModeStatus">Timer Mode Status</a></b>
+</dt><dd>
+</dd><dt><b>72 3E <a name="recordInhibitStatus">Record Inhibit Status</a></b>
+</dt><dd>
+</dd><dt><b>71 52 <a name="dAInputEmphasisData">DA Input Emphasis Data</a></b>
+</dt><dd>
+</dd><dt><b>71 53 <a name="dAPBEmphData">DA Playback Emphasis Data</a></b>
+</dt><dd>
+</dd><dt><b>71 58 <a name="dASampFreq">DA Sampling Frequency Data</a></b>
+</dt><dd>
+</dd><dt><b>7X AA <a name="CrossFadeTimeData">Cross Fade Time Data</a></b>
+</dt><dd>
+<p>
+</p><hr>
+<a href="https://ftp.zx.net.nz/pub/archive/ftp.sgi.com/sgi/video/rld/vidpage.html">Back to the Video Page</a><br>
+<address>
+<a href="mailto:rld@sgi.com">Rick Davis &lt;rld@sgi.com&gt;</a>
+</address>
+
+
+</dd></body></html>

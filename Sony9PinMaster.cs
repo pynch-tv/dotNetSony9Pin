@@ -1,10 +1,10 @@
-﻿using Pynch.Sony9Pin.Core;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.Return;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.SenseRequest;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.SenseReturn;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.StatusData;
-using Pynch.Sony9Pin.Core.Sony9Pin.CommandBlocks.TimeSenseRequest;
+﻿using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseRequest;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.StatusData;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.TimeSenseRequest;
+using Pynch.Sony9Pin.Core;
 using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -527,6 +527,7 @@ internal class Sony9PinMaster : Sony9Pin
                     stopwatch.Stop();
                     Debug.WriteLine($"Response only in: {stopwatch.ElapsedMilliseconds} ms");
                     Debug.WriteLine($"serial bytes remaining {SerialPort.BytesToRead}");
+                    Debug.Assert(0 == SerialPort.BytesToRead, "serial bytes remaining is not zero");
 
                     IsConnected = true;
 

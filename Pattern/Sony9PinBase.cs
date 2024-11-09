@@ -3,30 +3,32 @@ using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 
 namespace lathoub.dotNetSony9Pin.Pattern;
 
-public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBlock>
+public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBlock>, IDisposable
 {
-    protected readonly SerialPort SerialPort = new();
+    protected readonly SerialPort _serialPort = new();
 
-    public string Port => SerialPort.PortName;
+    public string Port => _serialPort.PortName;
+
+    private bool _disposed;
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="host"></param>
     /// <param name="port"></param>
-    public virtual bool Connect(string port)
+    public virtual bool Open(string port)
     {
-        SerialPort.PortName = port;
-        SerialPort.BaudRate = 38400;
-        SerialPort.DataBits = 8;
-        SerialPort.StopBits = StopBits.One;
-        SerialPort.Parity = Parity.Odd;
-        SerialPort.Handshake = Handshake.None;
-        SerialPort.DtrEnable = true;
-        SerialPort.RtsEnable = true;
-        SerialPort.ReadTimeout = 250; // Sony9Pin specs indicate 9ms
+        _serialPort.PortName = port;
+        _serialPort.BaudRate = 38400;
+        _serialPort.DataBits = 8;
+        _serialPort.StopBits = StopBits.One;
+        _serialPort.Parity = Parity.Odd;
+        _serialPort.Handshake = Handshake.None;
+        _serialPort.DtrEnable = true;
+        _serialPort.RtsEnable = true;
+        _serialPort.ReadTimeout = 250; // Sony9Pin specs indicate 9ms
 
-        SerialPort.Open();
+        _serialPort.Open();
 
         return true;
     }
@@ -35,8 +37,53 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// 
     /// </summary>
     /// <returns></returns>
-    public virtual void Disconnect()
+    public virtual void Close()
     {
-        SerialPort.Close();
+        _serialPort.Close();
+    }
+
+    /// <summary>
+    ///     Clean up any resources being used.
+    /// </summary>
+    /// <param name="disposing">
+    ///     true if managed resources should be disposed; otherwise, false.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            try
+            {
+                if (disposing)
+                {
+                    // Release the managed resources
+                    Close();
+                }
+
+                // Release the native unmanaged resources here.
+                // NOP                        
+            }
+            finally
+            {
+                // Call Dispose on the base class, if any
+            }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    public void Dispose()
+    {
+        Dispose(true);
+
+        // This object will be cleaned up by the Dispose method.
+        // Therefore, you should call GC.SupressFinalize to
+        // take this object off the finalization queue 
+        // and prevent finalization code for this object
+        // from executing a second time.
+        GC.SuppressFinalize(this);
     }
 }

@@ -1,11 +1,21 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using System.Linq;
+using System.Diagnostics;
 using lathoub.dotNetSony9Pin;
 using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
-using System.Diagnostics;
+
+var ports = Sony9PinMaster.DiscoverPorts();
+if (ports.Count == 0)
+{
+    Console.WriteLine("No ports found");
+    return;
+}
+
+var firstPort = ports[0];
 
 var master = new Sony9PinMaster();
 
-master.Connect("COM3");
+master.Open(firstPort);
 
 try
 {
@@ -15,7 +25,7 @@ try
 
 
     var t2 = master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0)).Result;
-    Debug.WriteLine(master.ParseResponse(t2));
+    Debug.WriteLine(Sony9PinMaster.ParseResponse(t2));
     Debug.WriteLine($"==============================================================");
 }
 catch (Exception ex)
@@ -49,4 +59,4 @@ while (true) {
     Thread.Sleep(1);
 }
 
-master.Disconnect();
+master.Close();

@@ -1,11 +1,15 @@
-﻿using lathoub.dotNetSony9Pin.Pattern;
+﻿using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO.Ports;
+using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
+using lathoub.dotNetSony9Pin.Pattern;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.StatusData;
-using System.Collections;
-using System.ComponentModel;
-using System.Diagnostics;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 
 namespace lathoub.dotNetSony9Pin;
 
@@ -240,11 +244,55 @@ internal class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
+    public static NameValueCollection DiscoverPorts()
+    {
+        var activePorts = new NameValueCollection();
+
+        foreach (var serialPort in SerialPort.GetPortNames())
+        {
+            using var bvw75 = new Sony9PinMaster();
+
+            if (!bvw75.Open(serialPort))
+                continue;
+
+            try
+            {
+                try
+                {
+                    var dtr = bvw75.SendAsync(new DeviceTypeRequest());
+                    if (null == dtr)
+                        continue;
+
+                    var deviceName = ParseResponse(dtr.Result);
+
+                    activePorts.Add(serialPort, deviceName);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                bvw75.Close();
+            }
+        }
+
+        return activePorts;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public override bool Connect(string port)
+    public override bool Open(string port)
     {
-        if (!base.Connect(port))
+        if (!base.Open(port))
             return false;
 
         _serialReaderWorker.RunWorkerAsync();
@@ -257,7 +305,7 @@ internal class Sony9PinMaster : Sony9PinBase
     /// 
     /// </summary>
     /// <returns></returns>
-    public override void Disconnect()
+    public override void Close()
     {
 
         // Let the this._queueReaderWorker know its time to finish
@@ -273,7 +321,7 @@ internal class Sony9PinMaster : Sony9PinBase
             if (!_workerThreadStopped.WaitOne()) // will block until _workerThreadStopped.Set() call made at end of worker thread
                 Debug.WriteLine("Could not stop serial master thread");
 
-        base.Disconnect();
+        base.Close();
     }
 
     /// <summary>
@@ -381,7 +429,7 @@ internal class Sony9PinMaster : Sony9PinBase
         }
     }
 
-    public string ParseResponse(CommandBlock res)
+    public static string ParseResponse(CommandBlock res)
     {
         if (null == res)
             return "";
@@ -490,7 +538,7 @@ internal class Sony9PinMaster : Sony9PinBase
 
         while (!worker.CancellationPending)
         {
-            if (!SerialPort.IsOpen)
+            if (!_serialPort.IsOpen)
                 break;
 
             //
@@ -507,9 +555,9 @@ internal class Sony9PinMaster : Sony9PinBase
 
                 // Read characters from the serialPort until we can create a 
                 // complete and valid CommandBlock
-                while (SerialPort.IsOpen)
+                while (_serialPort.IsOpen)
                 {
-                    var b = SerialPort.ReadByte();
+                    var b = _serialPort.ReadByte();
                     if (b == -1)
                         break; // No more data to read
                     InputBuffer.Add((byte)b);
@@ -524,8 +572,8 @@ internal class Sony9PinMaster : Sony9PinBase
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
                     Debug.WriteLine($"Response only in: {stopwatch.ElapsedMilliseconds} ms");
-                    Debug.WriteLine($"serial bytes remaining {SerialPort.BytesToRead}");
-                    Debug.Assert(0 == SerialPort.BytesToRead, "serial bytes remaining is not zero");
+                    Debug.WriteLine($"serial bytes remaining {_serialPort.BytesToRead}");
+                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
 
                     IsConnected = true;
 
@@ -620,7 +668,7 @@ internal class Sony9PinMaster : Sony9PinBase
         _requestReady.Set();
 
         var bytes = req.ToBytes();
-        SerialPort.Write(bytes, 0, bytes.Length);
+        _serialPort.Write(bytes, 0, bytes.Length);
     }
 
 }

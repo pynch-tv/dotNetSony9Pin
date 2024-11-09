@@ -1,17 +1,15 @@
-﻿using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
+﻿using lathoub.dotNetSony9Pin.Pattern;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
-using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseRequest;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.StatusData;
-using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.TimeSenseRequest;
-using Pynch.Sony9Pin.Core;
 using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 
-namespace lathoub;
+namespace lathoub.dotNetSony9Pin;
 
-internal class Sony9PinMaster : Sony9Pin
+internal class Sony9PinMaster : Sony9PinBase
 {
     public string Model { get; internal set; } = "";
 
@@ -246,7 +244,7 @@ internal class Sony9PinMaster : Sony9Pin
     /// <returns></returns>
     public override bool Connect(string port)
     {
-        if (!base.Connect(port)) 
+        if (!base.Connect(port))
             return false;
 
         _serialReaderWorker.RunWorkerAsync();
@@ -333,7 +331,7 @@ internal class Sony9PinMaster : Sony9Pin
 
                     case Return.DeviceType:
                         {
-                            var deviceId = (ushort)((res.Data[0] << 8) | res.Data[1]);
+                            var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
                             if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
                                 deviceName = BitConverter.ToString(res.Data).Replace("-", string.Empty);
 
@@ -433,7 +431,7 @@ internal class Sony9PinMaster : Sony9Pin
 
                     case Return.DeviceType:
                         {
-                            var deviceId = (ushort)((res.Data[0] << 8) | res.Data[1]);
+                            var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
                             if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
                                 deviceName = BitConverter.ToString(res.Data).Replace("-", string.Empty);
 
@@ -460,7 +458,7 @@ internal class Sony9PinMaster : Sony9Pin
                     case SenseReturn.HoldVitcTimeData:
                     case SenseReturn.HoldUbVitcData:
                         var timeCode = new TimeCode(res.Data);
-                        return timeCode.ToString(); 
+                        return timeCode.ToString();
                         break;
 
                     case SenseReturn.StatusData:
@@ -512,7 +510,7 @@ internal class Sony9PinMaster : Sony9Pin
                 while (SerialPort.IsOpen)
                 {
                     var b = SerialPort.ReadByte();
-                    if (b == -1) 
+                    if (b == -1)
                         break; // No more data to read
                     InputBuffer.Add((byte)b);
 
@@ -590,18 +588,18 @@ internal class Sony9PinMaster : Sony9Pin
             if (!_fireIdleCommand.WaitOne(1))
                 continue;
 
-            if (_currentTimeSenseOrStatusSense == 0)
-            {
-                var r = this.SendAsync(new StatusSense()).Result;
-                Debug.WriteLine(ParseResponse(r));
-                Debug.WriteLine($"==============================================================");
-            }
-            else if (_currentTimeSenseOrStatusSense == 1)
-            {
-                var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
-                Debug.WriteLine(ParseResponse(r));
-                Debug.WriteLine($"==============================================================");
-            }
+            //if (_currentTimeSenseOrStatusSense == 0)
+            //{
+            //    var r = this.SendAsync(new StatusSense()).Result;
+            //    Debug.WriteLine(ParseResponse(r));
+            //    Debug.WriteLine($"==============================================================");
+            //}
+            //else if (_currentTimeSenseOrStatusSense == 1)
+            //{
+            //    var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+            //    Debug.WriteLine(ParseResponse(r));
+            //    Debug.WriteLine($"==============================================================");
+            //}
 
             _currentTimeSenseOrStatusSense++;
             if (_currentTimeSenseOrStatusSense > 1)

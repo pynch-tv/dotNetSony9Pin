@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 
-namespace lathoub;
+namespace lathoub.dotNetSony9Pin.Pattern;
 
-public abstract class RequestResponsePump<T, U> 
+public abstract class RequestResponsePump<T, U>
 {
     #region Events
 

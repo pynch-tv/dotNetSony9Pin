@@ -1,6 +1,6 @@
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 
-namespace Pynch.Sony9Pin.Core;
+namespace lathoub.dotNetSony9Pin;
 
 /// <summary>
 ///     The time data event args.

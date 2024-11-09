@@ -1,6 +1,4 @@
-﻿using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
-
-namespace lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.TransportControl;
+﻿namespace lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.TransportControl;
 
 /// <summary>
 /// 

@@ -1,4 +1,4 @@
-﻿namespace lathoub;
+﻿namespace lathoub.dotNetSony9Pin;
 
 public class ConnectedEventArgs : EventArgs
 {

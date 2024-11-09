@@ -1,6 +1,4 @@
-﻿using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
-
-namespace lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.PresetSelectControl;
+﻿namespace lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.PresetSelectControl;
 
 /// <summary>
 /// 

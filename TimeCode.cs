@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 
-namespace Pynch.Sony9Pin.Core;
+namespace lathoub.dotNetSony9Pin;
 
 /// <summary>
 /// 
@@ -539,7 +539,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public static long SnapToField(long ticks)
     {
-        return (long)((((ticks + (0.5f * TicksPerField)) / TicksPerField)) * TicksPerField);
+        return (long)((ticks + 0.5f * TicksPerField) / TicksPerField * TicksPerField);
     }
 
     /// <summary>
@@ -583,7 +583,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public static bool operator >(TimeCode tc1, TimeCode tc2)
     {
-        return (tc1.TotalTicks > tc2.TotalTicks);
+        return tc1.TotalTicks > tc2.TotalTicks;
     }
 
     /// <summary>
@@ -594,7 +594,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public static bool operator >=(TimeCode tc1, TimeCode tc2)
     {
-        return (tc1.TotalTicks >= tc2.TotalTicks);
+        return tc1.TotalTicks >= tc2.TotalTicks;
     }
 
     /// <summary>
@@ -605,7 +605,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public static bool operator <(TimeCode tc1, TimeCode tc2)
     {
-        return (tc1.TotalTicks < tc2.TotalTicks);
+        return tc1.TotalTicks < tc2.TotalTicks;
     }
 
     /// <summary>
@@ -616,7 +616,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public static bool operator <=(TimeCode tc1, TimeCode tc2)
     {
-        return (tc1.TotalTicks <= tc2.TotalTicks);
+        return tc1.TotalTicks <= tc2.TotalTicks;
     }
 
     /// <summary>
@@ -724,7 +724,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <returns></returns>
     public bool Equals(TimeCode? other)
     {
-        return other != null && (_totalTicks.Equals(other.TotalTicks));
+        return other != null && _totalTicks.Equals(other.TotalTicks);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -797,12 +797,12 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
         Debug.Assert(tc.Length == 4, "A timecode byte array should be exactly 4 bytes in the form [ff,ss,mm,hh]");
 
         // for the hours: set the first bit to 0 (field indication)
-        var htc = (byte)(((byte)(tc[3] << 1) >> 1));
+        var htc = (byte)((byte)(tc[3] << 1) >> 1);
 
-        var frames  = (((tc[0] >> 4) * 10) + (tc[0] & 0x0F));
-        var seconds = (((tc[1] >> 4) * 10) + (tc[1] & 0x0F));
-        var minutes = (((tc[2] >> 4) * 10) + (tc[2] & 0x0F));
-        var hours   = (((  htc >> 4) * 10) + (htc   & 0x0F));
+        var frames = (tc[0] >> 4) * 10 + (tc[0] & 0x0F);
+        var seconds = (tc[1] >> 4) * 10 + (tc[1] & 0x0F);
+        var minutes = (tc[2] >> 4) * 10 + (tc[2] & 0x0F);
+        var hours = (htc >> 4) * 10 + (htc & 0x0F);
 
         var fields = frames;// * fieldsPerFrame;
 
@@ -857,18 +857,18 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
                 "A TimeCode should be in format [-]hh:mm:ss:ff or [-]hh:mm:ss:mil (note: ',' instead of ':' is also allowed, as well as mixing ',' and ':')");
         }
 
-        var hours = Int32.Parse(timeParts[0]);
-        var minutes = Int32.Parse(timeParts[1]);
-        var seconds = Int32.Parse(timeParts[2]);
+        var hours = int.Parse(timeParts[0]);
+        var minutes = int.Parse(timeParts[1]);
+        var seconds = int.Parse(timeParts[2]);
 
         int fields;
         switch (timeParts[3].Length)
         {
             case 2:
-                fields = Int32.Parse(timeParts[3]); // parse as fields
+                fields = int.Parse(timeParts[3]); // parse as fields
                 break;
             case 3:
-                fields = (int)(FieldsPerSecond * Int32.Parse(timeParts[3]) / 1000); // parse as milliseconds
+                fields = (int)(FieldsPerSecond * int.Parse(timeParts[3]) / 1000); // parse as milliseconds
                 break;
             default:
                 throw new FormatException(
@@ -905,11 +905,11 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
     /// <param name="ticks"></param>
     public void SetData(int hours, int minutes, int seconds, int fields, int ticks)
     {
-        TotalTicks = (hours   * TicksPerHour)
-                        + (minutes * TicksPerMinute)
-                        + (seconds * TicksPerSecond)
-                        + (fields  * TicksPerField)
-                        + (ticks);
+        TotalTicks = hours * TicksPerHour
+                        + minutes * TicksPerMinute
+                        + seconds * TicksPerSecond
+                        + fields * TicksPerField
+                        + ticks;
     }
 
     /// <summary>
@@ -1012,7 +1012,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
         lock (this)
         {
             // note: it is important to round the fields correctly by the remainder ticks, for exact representation in all cases!!!
-            var roundedFields = Fields + (Ticks >= (TicksPerField >> 1) ? 1 : 0);
+            var roundedFields = Fields + (Ticks >= TicksPerField >> 1 ? 1 : 0);
             frames = (byte)(roundedFields >> 1);
             seconds = Seconds;
             minutes = Minutes;
@@ -1020,10 +1020,10 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
         }
         return new[]
                    {
-                       (byte)(((frames / 10) << 4) | (frames - (frames / 10 * 10))),
-                       (byte)(((seconds / 10) << 4) | (seconds - (seconds / 10 * 10))),
-                       (byte)(((minutes / 10) << 4) | (minutes - (minutes / 10 * 10))),
-                       (byte)(((hours / 10) << 4) | (hours - (hours / 10 * 10)))
+                       (byte)(frames / 10 << 4 | frames - frames / 10 * 10),
+                       (byte)(seconds / 10 << 4 | seconds - seconds / 10 * 10),
+                       (byte)(minutes / 10 << 4 | minutes - minutes / 10 * 10),
+                       (byte)(hours / 10 << 4 | hours - hours / 10 * 10)
                    };
     }
 
@@ -1047,7 +1047,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
             case CgTimeRepresentation.TimeCode:
                 {
                     // note: it is important to round the fields correctly by the remainder ticks, for exact representation in all cases!!!
-                    var roundedFields = (byte)(Fields + (Ticks >= (TicksPerField >> 1) ? 1 : 0));
+                    var roundedFields = (byte)(Fields + (Ticks >= TicksPerField >> 1 ? 1 : 0));
                     if (_inToString)
                     {
                         return string.Format(
@@ -1066,7 +1066,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
                                 && !(Hours == 0 && Minutes == 0 && Seconds == 0 && roundedFields == 0)) // make negative, but avoid negative zero
                             {
                                 var positive = new TimeCode(Math.Abs(_totalTicks));
-                                return ("-" + positive);
+                                return "-" + positive;
                             }
                             return string.Format(
                                 "{0:00}:{1:00}:{2:00}:{3:00}",
@@ -1116,7 +1116,7 @@ public class TimeCode : IComparable, IEquatable<TimeCode>
         t -= _seconds * TicksPerSecond;
         _fields = (int)(t / TicksPerField);
         t -= _fields * TicksPerField;
-        _ticks = (int)(t);
+        _ticks = (int)t;
     }
 
     #endregion

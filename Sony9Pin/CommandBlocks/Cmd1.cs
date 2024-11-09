@@ -54,5 +54,4 @@ public enum Cmd1 : byte
     ///     zzzReturn.
     /// </summary>
     zzzReturn = 0xD,
-
 }

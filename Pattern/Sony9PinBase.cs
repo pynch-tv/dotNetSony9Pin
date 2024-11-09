@@ -1,9 +1,9 @@
 ﻿using System.IO.Ports;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 
-namespace lathoub;
+namespace lathoub.dotNetSony9Pin.Pattern;
 
-public abstract class Sony9Pin : RequestResponsePump<CommandBlock, CommandBlock>
+public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBlock>
 {
     protected readonly SerialPort SerialPort = new();
 

@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Pynch.Sony9Pin.Core;
+namespace lathoub.dotNetSony9Pin;
 
 /// <summary>
 /// 

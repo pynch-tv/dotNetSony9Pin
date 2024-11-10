@@ -5,12 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId />
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="HyperDeck2.cs" />
     <Compile Remove="HyperDeckException.cs" />
+    <Compile Remove="Main.cs" />
   </ItemGroup>
 
   <ItemGroup>

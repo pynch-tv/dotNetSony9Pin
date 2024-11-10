@@ -177,9 +177,7 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
             // (exclusing the checksum itself)
             var calculatedCheckSum = 0;
             for (var i = 0; i < commandBlockLength - 1; i++)
-            {
                 calculatedCheckSum += s[i];
-            }
             calculatedCheckSum &= 0xFF;
 
             if (calculatedCheckSum != checkSum)

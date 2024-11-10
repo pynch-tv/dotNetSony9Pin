@@ -6,13 +6,15 @@ using System.IO.Ports;
 using lathoub.dotNetSony9Pin.Pattern;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseRequest;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.StatusData;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.TimeSenseRequest;
 
 namespace lathoub.dotNetSony9Pin;
 
-internal class Sony9PinMaster : Sony9PinBase
+public class Sony9PinMaster : Sony9PinBase
 {
     public string Model { get; internal set; } = "";
 
@@ -485,7 +487,7 @@ internal class Sony9PinMaster : Sony9PinBase
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
                     Debug.WriteLine($"Response only in: {stopwatch.ElapsedMilliseconds} ms");
-//                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
+                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
 
                     var btr = _serialPort.BytesToRead;
                     if (btr > 0)
@@ -558,18 +560,16 @@ internal class Sony9PinMaster : Sony9PinBase
             if (!_fireIdleCommand.WaitOne(1))
                 continue;
 
-            //if (_currentTimeSenseOrStatusSense == 0)
-            //{
-            //    var r = this.SendAsync(new StatusSense()).Result;
-            //    Debug.WriteLine(ParseResponse(r));
-            //    Debug.WriteLine($"==============================================================");
-            //}
-            //else if (_currentTimeSenseOrStatusSense == 1)
-            //{
-            //    var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
-            //    Debug.WriteLine(ParseResponse(r));
-            //    Debug.WriteLine($"==============================================================");
-            //}
+            if (_currentTimeSenseOrStatusSense == 0)
+            {
+                _ = SendAsync(new StatusSense()).Result;
+                Debug.WriteLine($"==============================================================");
+            }
+            else if (_currentTimeSenseOrStatusSense == 1)
+            {
+                _ = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                Debug.WriteLine($"==============================================================");
+            }
 
             _currentTimeSenseOrStatusSense++;
             if (_currentTimeSenseOrStatusSense > 1)

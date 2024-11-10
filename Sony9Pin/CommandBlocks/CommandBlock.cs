@@ -276,6 +276,26 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
         return buffer;
     }
 
+    public static string GetManufacturerName(byte[] data)
+    {
+        if (data.Length < 2)
+            return "Unknown";
+
+        var deviceId = (ushort)(data[0] << 8 | data[1]);
+        string device;
+        if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
+            device = BitConverter.ToString(data).Replace("-", string.Empty);
+        else
+            device = deviceDescription.Manufacturer;
+
+        return device ?? "Unknown";
+    }
+
+    public bool IsEmpty()
+    {
+        return (Cmd1 == 0x00 && Cmd2 == 0x00 && Data.Length == 0);
+    }
+
     /// <summary>
     ///     Assemble a friendly string
     /// </summary>
@@ -284,6 +304,9 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// </returns>
     public override string ToString()
     {
+        if (IsEmpty())
+            return "";
+
         switch (Cmd1)
         {
             case CommandFunction.Return:
@@ -293,9 +316,12 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
                         return ("Ack");
                     case Return.Return.DeviceType:
                         var deviceId = (ushort)(this.Data[0] << 8 | this.Data[1]);
-                        if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
-                            deviceName = BitConverter.ToString(this.Data).Replace("-", string.Empty);
-                        return (deviceName ?? "Unknown");
+                        string device;
+                        if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
+                            device = BitConverter.ToString(this.Data).Replace("-", string.Empty);
+                        else
+                            device = deviceDescription.Model;
+                        return (device ?? "Unknown");
                     case Return.Return.Nak:
                         var bits = new BitArray(new int[] { this.Data[0] });
                         if (bits.Get((int)NakCommandBlock.Nak.ChecksumError))

@@ -203,11 +203,11 @@ public class Sony9PinMaster : Sony9PinBase
     private readonly BackgroundWorker _serialReaderWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
     private readonly BackgroundWorker _idleWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
 
-    private AutoResetEvent _requestReady = new(false);
+    private readonly AutoResetEvent _requestReady = new(false);
 
-    private AutoResetEvent _fireIdleCommand = new(false);
+    private readonly AutoResetEvent _fireIdleCommand = new(false);
 
-    private System.Timers.Timer _idleTimer = new();
+    private readonly System.Timers.Timer _idleTimer = new();
 
     private readonly object _lock = new();
 
@@ -261,8 +261,12 @@ public class Sony9PinMaster : Sony9PinBase
                 try
                 {
                     var dtr = bvw75.SendAsync(new DeviceTypeRequest());
-                    if (null == dtr)
+                    if (null == dtr.Result)
+                    {
+                        Debug.WriteLine("No response from device");
                         continue;
+                    }
+
                     var deviceName = dtr.Result.ToString();
 
                     activePorts.Add(serialPort, deviceName);
@@ -380,10 +384,12 @@ public class Sony9PinMaster : Sony9PinBase
                     case Return.DeviceType:
                         {
                             var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
-                            if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
-                                deviceName = BitConverter.ToString(res.Data).Replace("-", string.Empty);
-
-                            Model = deviceName ?? "Unknown";
+                            string device;
+                            if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
+                                device = BitConverter.ToString(res.Data).Replace("-", string.Empty);
+                            else
+                                device = deviceDescription.Model;
+                            Model = device ?? "Unknown";
 
                             RaiseDeviceTypeHandler(Model);
                         }
@@ -515,7 +521,7 @@ public class Sony9PinMaster : Sony9PinBase
 
                 IsConnected = false;
 
-                Received(new CommandBlock()); // return error object
+                Received(null); // return error object
             }
             catch (Exception)
             {

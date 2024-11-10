@@ -2,7 +2,7 @@
 
 namespace lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 
-internal class BMDSeekToTimelinePosition : CommandBlock
+public class BMDSeekToTimelinePosition : CommandBlock
 {
     public BMDSeekToTimelinePosition(ushort position)
     {
@@ -12,7 +12,7 @@ internal class BMDSeekToTimelinePosition : CommandBlock
         data[0] = (byte)position;
         data[1] = (byte)(position >> 8);
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.rrrReturn, data.Length);
         Cmd2 = (byte)BlackmagicExtensions.BMDSeekToTimelinePosition;
         Data = data;
     }

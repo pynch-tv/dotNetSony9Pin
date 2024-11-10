@@ -10,7 +10,7 @@ public class ShuttleFwd : CommandBlock
     /// </summary>
     public ShuttleFwd(byte n)
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         DataCount = 1;
         Cmd2 = (byte)TransportControl.ShuttleFwd;
         Data = new[] { n };
@@ -21,7 +21,7 @@ public class ShuttleFwd : CommandBlock
     /// </summary>
     public ShuttleFwd(byte n1, byte n2)
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         DataCount = 2;
         Cmd2 = (byte)TransportControl.ShuttleFwd;
         Data = new[] { n1, n2 };

@@ -10,7 +10,7 @@ public class Review : CommandBlock
     /// </summary>
     public Review()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Review;
     }
 }

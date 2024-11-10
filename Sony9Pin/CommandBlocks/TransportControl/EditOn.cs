@@ -13,7 +13,7 @@ public class EditOn : CommandBlock
     /// </summary>
     public EditOn()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.EditOn;
     }
 }

@@ -11,7 +11,7 @@ public class CurrentTimeSense : CommandBlock
     {
         var data = new[] { (byte)request };
 
-        Cmd1 = Cmd1.SenseRequest;
+        Cmd1 = CommandFunction.SenseRequest;
         DataCount = data.Length;
         Cmd2 = (byte)SenseRequest.CurrentTimeSense;
         Data = data;

@@ -12,7 +12,7 @@ public class Preroll : CommandBlock
     /// </summary>
     public Preroll()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Preroll;
     }
 }

@@ -43,7 +43,7 @@ public class BMDPlay : CommandBlock
         // false and all other values evaluate as true.
         data[4] = scroll;
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.rrrReturn, data.Length);
         Cmd2 = (byte)BlackmagicExtensions.BMDPlay;
         Data = data;
     }

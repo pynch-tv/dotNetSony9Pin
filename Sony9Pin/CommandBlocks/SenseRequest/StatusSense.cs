@@ -18,7 +18,7 @@ public class StatusSense : CommandBlock
         var b = (byte)((byte)start << 4 | (byte)length);
         var data = new[] { b };
 
-        Cmd1 = Cmd1.SenseRequest;
+        Cmd1 = CommandFunction.SenseRequest;
         DataCount = data.Length;
         Cmd2 = (byte)SenseRequest.StatusSense;
         Data = data;

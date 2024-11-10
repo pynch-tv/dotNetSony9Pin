@@ -10,7 +10,7 @@ public class Rewind : CommandBlock
     /// </summary>
     public Rewind()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Rewind;
     }
 }

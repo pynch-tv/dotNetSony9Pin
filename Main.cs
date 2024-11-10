@@ -1,32 +1,35 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Linq;
 using System.Diagnostics;
 using lathoub.dotNetSony9Pin;
+using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
+using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 
-var ports = Sony9PinMaster.DiscoverPorts();
-if (ports.Count == 0)
-{
-    Console.WriteLine("No ports found");
-    return;
-}
+//var ports = Sony9PinMaster.DiscoverPorts();
+//if (ports.Count == 0)
+//{
+//    Console.WriteLine("No ports found");
+//    return;
+//}
 
-var firstPort = ports[0];
+//var firstPort = ports[0];
 
 var master = new Sony9PinMaster();
 
-master.Open(firstPort);
+master.Open("COM3");
 
 try
 {
-    //var tt = master.SendAsync(new DeviceTypeRequest()).Result;
-    //Debug.WriteLine(master.ParseResponse(tt));
-    //Debug.WriteLine($"==============================================================");
+    _ = master.SendAsync(new DeviceTypeRequest()).Result;
 
+    //_ = master.SendAsync(new ListNextID(0)).Result;
+    //Debug.WriteLine(Sony9PinMaster.ParseResponse(t2));
 
-    var t2 = master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0)).Result;
-    Debug.WriteLine(Sony9PinMaster.ParseResponse(t2));
-    Debug.WriteLine($"==============================================================");
+    //_ = master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0)).Result;
+    //Debug.WriteLine(t2);
+
+    _ = master.SendAsync(new BMDClip()).Result;
+
 }
 catch (Exception ex)
 {

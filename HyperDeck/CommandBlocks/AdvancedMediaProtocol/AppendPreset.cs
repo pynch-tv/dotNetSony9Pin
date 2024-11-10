@@ -14,7 +14,7 @@ internal class AppendPreset : CommandBlock
     {
         var data = new byte[5];
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.PresetSelectControl, data.Length);
         Cmd2 = (byte)AdvancedMediaProtocol.AppendPreset;
         Data = data;
     }

@@ -17,7 +17,7 @@ public class NakCommandBlock : CommandBlock
     /// </param>
     public NakCommandBlock(Nak error)
     {
-        Cmd1 = Cmd1.Return;
+        Cmd1 = CommandFunction.Return;
         Cmd2 = (byte)Return.Nak;
 
         Data = new byte[1];

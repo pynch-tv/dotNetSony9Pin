@@ -2,7 +2,7 @@
 
 namespace lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 
-internal class BMDScrubTimelineDelta : CommandBlock
+public class BMDScrubTimelineDelta : CommandBlock
 {
     public BMDScrubTimelineDelta(byte whence, int deltaToScrub, byte deltaSign, byte unitOfTimeScrub)
     {
@@ -19,7 +19,7 @@ internal class BMDScrubTimelineDelta : CommandBlock
 
         data[6] = unitOfTimeScrub;
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.rrrReturn, data.Length);
         Cmd2 = (byte)BlackmagicExtensions.BMDScrubTimelineDelta;
         Data = data;
     }

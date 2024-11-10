@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Ports;
-using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 using lathoub.dotNetSony9Pin.Pattern;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
@@ -262,8 +261,7 @@ internal class Sony9PinMaster : Sony9PinBase
                     var dtr = bvw75.SendAsync(new DeviceTypeRequest());
                     if (null == dtr)
                         continue;
-
-                    var deviceName = ParseResponse(dtr.Result);
+                    var deviceName = dtr.Result.ToString();
 
                     activePorts.Add(serialPort, deviceName);
                 }
@@ -338,7 +336,7 @@ internal class Sony9PinMaster : Sony9PinBase
 
         switch (res.Cmd1)
         {
-            case Cmd1.Return:
+            case CommandFunction.Return:
                 switch ((Return)res.Cmd2)
                 {
                     case Return.Ack:
@@ -351,29 +349,29 @@ internal class Sony9PinMaster : Sony9PinBase
                         //this.Enabled = false;
 
                         var bits = new BitArray(new int[] { res.Data[0] });
-                        //if (bits.Get((int)NakCommandBlock.Nak.ChecksumError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.FrameError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.OverrunError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.ParityError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.TimeOut))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.UndefinedError))
-                        //{
-                        //}
+                        if (bits.Get((int)NakCommandBlock.Nak.ChecksumError))
+                        {
+                            Thread.Sleep(10);
+                        }
+                        if (bits.Get((int)NakCommandBlock.Nak.FrameError))
+                        {
+                            Thread.Sleep(10);
+                        }
+                        if (bits.Get((int)NakCommandBlock.Nak.OverrunError))
+                        {
+                            Thread.Sleep(10);
+                        }
+                        if (bits.Get((int)NakCommandBlock.Nak.ParityError))
+                        {
+                            Thread.Sleep(10);
+                        }
+                        if (bits.Get((int)NakCommandBlock.Nak.TimeOut))
+                        {
+                            Thread.Sleep(10);
+                        }
+                        if (bits.Get((int)NakCommandBlock.Nak.UndefinedError))
+                        {
+                        }
                         RaiseNakHandler((NakCommandBlock.Nak)res.Data[0]);
                         break;
 
@@ -392,7 +390,7 @@ internal class Sony9PinMaster : Sony9PinBase
 
                 break;
 
-            case Cmd1.SenseReturn:
+            case CommandFunction.SenseReturn:
                 switch ((SenseReturn)res.Cmd2)
                 {
                     case SenseReturn.Timer1Data:
@@ -429,97 +427,6 @@ internal class Sony9PinMaster : Sony9PinBase
         }
     }
 
-    public static string ParseResponse(CommandBlock res)
-    {
-        if (null == res)
-            return "";
-
-        switch (res.Cmd1)
-        {
-            case Cmd1.Return:
-                switch ((Return)res.Cmd2)
-                {
-                    case Return.Ack:
-                        // Indication that last Cmd1 was alright
-                        //RaiseAckHandler();
-                        return "Ack";
-                        break;
-
-                    case Return.Nak:
-                        //The master must immediatly stop sending data when it receives a NAK +Error Data message.
-                        //this.Enabled = false;
-
-                        var bits = new BitArray(new int[] { res.Data[0] });
-                        //if (bits.Get((int)NakCommandBlock.Nak.ChecksumError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.FrameError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.OverrunError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.ParityError))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.TimeOut))
-                        //{
-                        //    Thread.Sleep(10);
-                        //}
-                        //if (bits.Get((int)NakCommandBlock.Nak.UndefinedError))
-                        //{
-                        //}
-                        //RaiseNakHandler((NakCommandBlock.Nak)res.Data[0]);
-                        return bits.ToString();
-                        break;
-
-                    case Return.DeviceType:
-                        {
-                            var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
-                            if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
-                                deviceName = BitConverter.ToString(res.Data).Replace("-", string.Empty);
-
-                            return deviceName ?? "Unknown";
-                        }
-                        break;
-                }
-
-                break;
-
-            case Cmd1.SenseReturn:
-                switch ((SenseReturn)res.Cmd2)
-                {
-                    case SenseReturn.Timer1Data:
-                    case SenseReturn.Timer2Data:
-                    case SenseReturn.LtcTimeData:
-                    case SenseReturn.UserBitsLtcData:
-                    case SenseReturn.VitcTimeData:
-                    case SenseReturn.UserBitsVitcData:
-                    case SenseReturn.GenTimeData:
-                    case SenseReturn.GenUserBitsData:
-                    case SenseReturn.CorrectedLtcTimeData:
-                    case SenseReturn.HoldUbLtcData:
-                    case SenseReturn.HoldVitcTimeData:
-                    case SenseReturn.HoldUbVitcData:
-                        var timeCode = new TimeCode(res.Data);
-                        return timeCode.ToString();
-                        break;
-
-                    case SenseReturn.StatusData:
-                        var statusData = new StatusData(res.Data);
-                        return statusData.ToString();
-                        break;
-                }
-
-                break;
-        }
-
-        return "unhandled";
-    }
     /// <summary>
     /// 
     /// </summary>
@@ -545,6 +452,12 @@ internal class Sony9PinMaster : Sony9PinBase
             if (!_requestReady.WaitOne(1))
                 continue;
 
+            // Flush serial buffers, both in and out
+            lock (_lock)
+            {
+                _serialPort.DiscardInBuffer();
+                _serialPort.DiscardOutBuffer();
+            }
             // Make sure we have an empty buffer
             InputBuffer.Clear();
 
@@ -572,8 +485,17 @@ internal class Sony9PinMaster : Sony9PinBase
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
                     Debug.WriteLine($"Response only in: {stopwatch.ElapsedMilliseconds} ms");
-                    Debug.WriteLine($"serial bytes remaining {_serialPort.BytesToRead}");
-                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
+//                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
+
+                    var btr = _serialPort.BytesToRead;
+                    if (btr > 0)
+                    {
+                        Debug.WriteLine($"{btr} bytes remaining to be read??");
+                        for (int i = 0; i < btr; i++)
+                        {
+                            Debug.WriteLine($"0x{_serialPort.ReadByte():X}");
+                        }
+                    }
 
                     IsConnected = true;
 
@@ -662,13 +584,14 @@ internal class Sony9PinMaster : Sony9PinBase
     /// </summary>
     protected override void Send(CommandBlock req)
     {
-        Debug.WriteLine($"Send: {req}");
-
         _idleTimer.Stop();
         _requestReady.Set();
 
         var bytes = req.ToBytes();
-        _serialPort.Write(bytes, 0, bytes.Length);
+        lock (_lock)
+        {
+            _serialPort.Write(bytes, 0, bytes.Length);
+        }
     }
 
 }

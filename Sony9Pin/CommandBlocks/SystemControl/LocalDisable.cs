@@ -10,7 +10,7 @@ public class LocalDisable : CommandBlock
     /// </summary>
     public LocalDisable()
     {
-        Cmd1 = Cmd1.SystemControl;
+        Cmd1 = CommandFunction.SystemControl;
         Cmd2 = (byte)SystemControl.LocalDisable;
     }
 }

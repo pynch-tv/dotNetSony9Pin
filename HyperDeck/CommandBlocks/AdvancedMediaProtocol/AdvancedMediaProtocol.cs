@@ -31,7 +31,8 @@ public enum AdvancedMediaProtocol : byte
     SetStopMode = 0x44,
 
     /// <summary>
-    ///     The stop.
+    /// 
     /// </summary>
     AppendPreset = 0x16,
+
 }

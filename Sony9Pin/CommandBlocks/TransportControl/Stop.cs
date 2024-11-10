@@ -18,7 +18,7 @@ public class Stop : CommandBlock
     /// </summary>
     public Stop()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Stop;
     }
 }

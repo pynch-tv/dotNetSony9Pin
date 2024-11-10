@@ -13,7 +13,7 @@ public class OutDataPreset : CommandBlock
     {
         var data = tc.ToBinaryCodedDecimal();
 
-        Cmd1DataCount = ToCmd1DataCount(Cmd1.TransportControl, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.TransportControl, data.Length);
         Cmd2 = (byte)TransportControl.OutDataPreset;
         Data = data;
     }

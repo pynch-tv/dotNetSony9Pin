@@ -11,7 +11,7 @@ public class ProgSpeedPlayPlus : CommandBlock
     /// </summary>
     public ProgSpeedPlayPlus()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.ProgSpeedPlayPlus;
     }
 }

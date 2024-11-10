@@ -17,7 +17,7 @@ public class DeviceTypeRequest : CommandBlock
     /// </summary>
     public DeviceTypeRequest()
     {
-        Cmd1 = Cmd1.SystemControl;
+        Cmd1 = CommandFunction.SystemControl;
         Cmd2 = (byte)SystemControl.DeviceTypeRequest;
     }
 }

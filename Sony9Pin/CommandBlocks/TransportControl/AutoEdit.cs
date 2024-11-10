@@ -10,7 +10,7 @@ public class AutoEdit : CommandBlock
     /// </summary>
     public AutoEdit()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.AutoEdit;
     }
 }

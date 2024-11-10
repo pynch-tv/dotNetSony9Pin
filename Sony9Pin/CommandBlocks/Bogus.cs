@@ -10,7 +10,7 @@ public class Bogus : CommandBlock
     /// /// </summary>
     public Bogus()
     {
-        Cmd1 = (Cmd1)0xFA;
+        Cmd1 = (CommandFunction)0xFA;
         Cmd2 = 0xFA;
     }
 }

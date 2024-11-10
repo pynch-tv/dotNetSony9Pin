@@ -10,7 +10,7 @@ public class FreezeOff : CommandBlock
     /// </summary>
     public FreezeOff()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.FreezeOff;
     }
 }

@@ -10,7 +10,7 @@ public class UserBitPreset : CommandBlock
     /// </summary>
     public UserBitPreset()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         //           this.Cmd2 = (byte)TransportControl.UserBitPreset;
         throw new NotImplementedException();
     }

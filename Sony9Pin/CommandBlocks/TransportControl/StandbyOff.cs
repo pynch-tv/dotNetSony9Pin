@@ -11,7 +11,7 @@ public class StandbyOff : CommandBlock
     /// </summary>
     public StandbyOff()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.StandbyOff;
     }
 }

@@ -11,7 +11,7 @@ public class LocalEnable : CommandBlock
     /// </summary>
     public LocalEnable()
     {
-        Cmd1 = Cmd1.SystemControl;
+        Cmd1 = CommandFunction.SystemControl;
         Cmd2 = (byte)SystemControl.LocalEnable;
     }
 }

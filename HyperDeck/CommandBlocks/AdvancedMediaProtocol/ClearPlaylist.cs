@@ -6,7 +6,7 @@ public class ClearPlaylist : CommandBlock
 {
     public ClearPlaylist()
     {
-        Cmd1 = (Cmd1)0x8;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)AdvancedMediaProtocol.ClearPlaylist;
     }
 }

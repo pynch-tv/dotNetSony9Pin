@@ -11,7 +11,7 @@ public class Timer1Reset : CommandBlock
     /// </summary>
     public Timer1Reset()
     {
-        Cmd1 = Cmd1.PresetSelectControl;
+        Cmd1 = CommandFunction.PresetSelectControl;
         Cmd2 = (byte)PresetSelectControl.Timer1Reset;
     }
 }

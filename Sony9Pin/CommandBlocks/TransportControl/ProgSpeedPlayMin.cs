@@ -11,7 +11,7 @@ public class ProgSpeedPlayMin : CommandBlock
     /// </summary>
     public ProgSpeedPlayMin()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.ProgSpeedPlayMin;
     }
 }

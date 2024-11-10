@@ -10,7 +10,7 @@ public class StandbyOn : CommandBlock
     /// </summary>
     public StandbyOn()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.StandbyOn;
     }
 }

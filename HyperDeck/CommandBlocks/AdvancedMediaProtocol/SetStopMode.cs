@@ -24,7 +24,7 @@ internal class SetStopMode : CommandBlock
         var data = new byte[1];
         data[0] = (byte)mode;
 
-        Cmd1 = (Cmd1)0x8;
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.PresetSelectControl, data.Length);
         Cmd2 = (byte)AdvancedMediaProtocol.SetStopMode;
         Data = data;
     }

@@ -10,7 +10,7 @@ public class VarFwd : CommandBlock
     /// </summary>
     public VarFwd()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.VarFwd;
     }
 }

@@ -10,7 +10,7 @@ public class OutpointPreview : CommandBlock
     /// </summary>
     public OutpointPreview()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.OutpointPreview;
     }
 }

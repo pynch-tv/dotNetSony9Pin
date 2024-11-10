@@ -15,7 +15,7 @@ public class DeviceType : CommandBlock
     /// </param>
     public DeviceType(byte[] deviceType)
     {
-        Cmd1 = Cmd1.Return;
+        Cmd1 = CommandFunction.Return;
         DataCount = 2;
         Cmd2 = (byte)Return.DeviceType;
         Data = deviceType;

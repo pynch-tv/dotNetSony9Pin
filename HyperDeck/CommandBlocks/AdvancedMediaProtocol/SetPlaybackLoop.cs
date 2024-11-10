@@ -20,7 +20,7 @@ internal class SetPlaybackLoop : CommandBlock
         if (singleClip)
             data[0] |= 1 << 1;
 
-        Cmd1 = (Cmd1)0x8;
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.PresetSelectControl, data.Length);
         Cmd2 = (byte)AdvancedMediaProtocol.SetPlaybackLoop;
         Data = data;
     }

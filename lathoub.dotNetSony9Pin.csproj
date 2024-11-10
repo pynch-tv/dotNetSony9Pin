@@ -24,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="EVS\CommandBlocks\" />
-    <Folder Include="Odetics\CommandBlocks\" />
+    <Folder Include="Sony9Pin\CommandBlocks\TapeControl\" />
+    <Folder Include="Sony9Pin\CommandBlocks\zzzReturn\" />
+    <Folder Include="Sony9Pin\CommandBlocks\xxxRequest\" />
   </ItemGroup>
 
 </Project>

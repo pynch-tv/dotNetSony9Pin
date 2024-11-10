@@ -3,7 +3,7 @@
 /// <summary>
 ///     The command.
 /// </summary>
-public enum Cmd1 : byte
+public enum CommandFunction : byte
 {
     /// <summary>
     ///     The system control.

@@ -10,7 +10,7 @@ public class OutMinusShift : CommandBlock
     /// </summary>
     public OutMinusShift()
     {
-        Cmd1 = Cmd1.PresetSelectControl;
+        Cmd1 = CommandFunction.PresetSelectControl;
         Cmd2 = (byte)PresetSelectControl.OutMinusShift;
     }
 }

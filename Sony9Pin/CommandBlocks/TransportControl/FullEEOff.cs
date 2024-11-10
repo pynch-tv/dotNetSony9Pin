@@ -11,7 +11,7 @@ public class FullEEOff : CommandBlock
     /// </summary>
     public FullEEOff()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.FullEEOff;
     }
 }

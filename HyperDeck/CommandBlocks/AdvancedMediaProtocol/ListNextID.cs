@@ -8,12 +8,21 @@ internal class ListNextID : CommandBlock
     /// when x = 0 single clip request when x = 1,
     /// #clips can be specified in the send data
     /// </summary>
-    public ListNextID(int id)
+    public ListNextID(byte numberOfClips)
     {
-        var data = new byte[5];
+        if (numberOfClips > 0)
+        {
+            var data = new byte[1];
+            data[0] = (byte)numberOfClips;
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
-        Cmd2 = (byte)AdvancedMediaProtocol.ListNextID;
-        Data = data;
+            Cmd1DataCount = ToCmd1DataCount(CommandFunction.xxxRequest, data.Length);
+            Cmd2 = (byte)AdvancedMediaProtocol.ListNextID;
+            Data = data;
+        }
+        else
+        {
+            Cmd1 = CommandFunction.xxxRequest;
+            Cmd2 = (byte)AdvancedMediaProtocol.ListNextID;
+        }
     }
 }

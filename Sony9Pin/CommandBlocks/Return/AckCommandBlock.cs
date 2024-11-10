@@ -12,7 +12,7 @@ public class AckCommandBlock : CommandBlock
     /// </summary>
     public AckCommandBlock()
     {
-        Cmd1 = Cmd1.Return;
+        Cmd1 = CommandFunction.Return;
         Cmd2 = (byte)Return.Ack;
     }
 

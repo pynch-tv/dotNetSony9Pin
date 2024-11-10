@@ -2,7 +2,7 @@
 
 namespace lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 
-internal class BMDSeekRelativeClip : CommandBlock
+public class BMDSeekRelativeClip : CommandBlock
 {
     public BMDSeekRelativeClip(byte numberOfClips)
     {
@@ -11,7 +11,7 @@ internal class BMDSeekRelativeClip : CommandBlock
         // number of clips to skip(negative for backwards).
         data[0] = numberOfClips;
 
-        Cmd1DataCount = ToCmd1DataCount((Cmd1)0x8, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.rrrReturn, data.Length);
         Cmd2 = (byte)BlackmagicExtensions.BMDSeekRelativeClip;
         Data = data;
     }

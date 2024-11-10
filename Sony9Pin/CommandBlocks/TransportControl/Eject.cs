@@ -10,7 +10,7 @@ public class Eject : CommandBlock
     /// </summary>
     public Eject()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Eject;
     }
 }

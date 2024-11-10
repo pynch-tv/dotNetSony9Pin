@@ -13,7 +13,7 @@ public class InDataPreset : CommandBlock
     {
         var data = tc.ToBinaryCodedDecimal();
 
-        Cmd1DataCount = ToCmd1DataCount(Cmd1.PresetSelectControl, data.Length);
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.PresetSelectControl, data.Length);
         Cmd2 = (byte)PresetSelectControl.PresetSelectControl.InDataPreset;
         Data = data;
     }

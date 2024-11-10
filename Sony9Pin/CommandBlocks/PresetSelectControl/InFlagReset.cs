@@ -10,7 +10,7 @@ public class InFlagReset : CommandBlock
     /// </summary>
     public InFlagReset()
     {
-        Cmd1 = Cmd1.PresetSelectControl;
+        Cmd1 = CommandFunction.PresetSelectControl;
         Cmd2 = (byte)PresetSelectControl.InFlagReset;
     }
 }

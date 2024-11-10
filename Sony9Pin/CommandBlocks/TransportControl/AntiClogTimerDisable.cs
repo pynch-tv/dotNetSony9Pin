@@ -11,7 +11,7 @@ public class AntiClogTimerDisable : CommandBlock
     /// </summary>
     public AntiClogTimerDisable()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.AntiClogTimerDisable;
     }
 }

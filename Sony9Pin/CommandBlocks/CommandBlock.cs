@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Text;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
@@ -46,7 +47,7 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// </param>
     /// <param name="data">
     /// </param>
-    public CommandBlock(Cmd1 cmd1, int dataCount, byte cmd2, byte[] data)
+    public CommandBlock(CommandFunction cmd1, int dataCount, byte cmd2, byte[] data)
         : this((byte)(((byte)cmd1 << 4) + dataCount), cmd2, data)
     {
     }
@@ -76,7 +77,7 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <summary>
     ///     Gets or sets the Cmd1 (Leaving DataCount untouched)
     /// </summary>
-    public Cmd1 Cmd1
+    public CommandFunction Cmd1
     {
         get => GetCmd1(Cmd1DataCount);
 
@@ -116,9 +117,9 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// </summary>
     /// <param name="cmd1DataCount"></param>
     /// <returns></returns>
-    public static Cmd1 GetCmd1(byte cmd1DataCount)
+    public static CommandFunction GetCmd1(byte cmd1DataCount)
     {
-        return (Cmd1)((cmd1DataCount & 0xF0) >> 4);
+        return (CommandFunction)((cmd1DataCount & 0xF0) >> 4);
     }
 
     /// <summary>
@@ -212,7 +213,7 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <param name="cmd1"></param>
     /// <param name="dataCount"></param>
     /// <returns></returns>
-    public static byte ToCmd1DataCount(Cmd1 cmd1, int dataCount)
+    public static byte ToCmd1DataCount(CommandFunction cmd1, int dataCount)
     {
         var cmd1DataCount = (byte)0x00;
 
@@ -235,7 +236,10 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
         var other = obj as CommandBlock;
         Debug.Assert(other != null);
 
-        throw new NotImplementedException();
+        if (other.Equals(this))
+            return 0;
+
+        return 1;
     }
 
     /// <summary>
@@ -246,7 +250,12 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     public bool Equals(CommandBlock? other)
     {
         if (null == other) return false;
-        throw new NotImplementedException();
+
+        if (Cmd1DataCount != other.Cmd1DataCount) return false;
+        if (Cmd2 != other.Cmd2) return false;
+        if (Data.Length != other.Data.Length) return false;
+
+        return true;
     }
 
     /// <summary>
@@ -278,122 +287,112 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// </returns>
     public override string ToString()
     {
-        var sb = new StringBuilder();
-
         switch (Cmd1)
         {
-            case Cmd1.SystemControl:
-                switch ((SystemControl.SystemControl)Cmd2)
-                {
-                    case SystemControl.SystemControl.LocalDisable:
-                        sb.Append("LocalDisable");
-                        break;
-                    case SystemControl.SystemControl.DeviceTypeRequest:
-                        sb.Append("DeviceTypeRequest");
-                        break;
-                    case SystemControl.SystemControl.LocalEnable:
-                        sb.Append("LocalEnable");
-                        break;
-                }
-                break;
-
-            case Cmd1.Return:
+            case CommandFunction.Return:
                 switch ((Return.Return)Cmd2)
                 {
                     case Return.Return.Ack:
-                        sb.Append("Ack");
-                        break;
+                        return ("Ack");
                     case Return.Return.DeviceType:
-                        sb.Append("DeviceType");
-                        break;
+                        var deviceId = (ushort)(this.Data[0] << 8 | this.Data[1]);
+                        if (!Device.Names.TryGetValue(deviceId, out string? deviceName))
+                            deviceName = BitConverter.ToString(this.Data).Replace("-", string.Empty);
+                        return (deviceName ?? "Unknown");
                     case Return.Return.Nak:
-                        sb.Append("Nak");
+                        var bits = new BitArray(new int[] { this.Data[0] });
+                        if (bits.Get((int)NakCommandBlock.Nak.ChecksumError))
+                            return ("Nak ChecksumError");
+                        if (bits.Get((int)NakCommandBlock.Nak.FrameError))
+                            return ("Nak FrameError");
+                        if (bits.Get((int)NakCommandBlock.Nak.OverrunError))
+                            return ("Nak OverrunError");
+                        if (bits.Get((int)NakCommandBlock.Nak.ParityError))
+                            return ("Nak ParityError");
+                        if (bits.Get((int)NakCommandBlock.Nak.TimeOut))
+                            return ("Nak TimeOut");
+                        if (bits.Get((int)NakCommandBlock.Nak.UndefinedError))
+                            return ("Nak UndefinedError");
                         break;
                 }
                 break;
 
-            case Cmd1.TransportControl:
+            case CommandFunction.SystemControl:
+                switch ((SystemControl.SystemControl)Cmd2)
+                {
+                    case SystemControl.SystemControl.LocalDisable:
+                        return ("LocalDisable");
+                    case SystemControl.SystemControl.DeviceTypeRequest:
+                        return ("DeviceTypeRequest");
+                    case SystemControl.SystemControl.LocalEnable:
+                        return ("LocalEnable");
+                }
+                break;
+
+            case CommandFunction.TransportControl:
                 switch ((TransportControl.TransportControl)Cmd2)
                 {
                     case TransportControl.TransportControl.Stop:
-                        sb.Append("Stop");
-                        break;
+                        return ("Stop");
                     case TransportControl.TransportControl.Play:
-                        sb.Append("Play");
-                        break;
+                        return ("Play");
                     case TransportControl.TransportControl.Record:
-                        sb.Append("Record");
-                        break;
+                        return ("Record");
                     case TransportControl.TransportControl.StandbyOff:
-                        sb.Append("StandbyOff");
-                        break;
+                        return ("StandbyOff");
                     case TransportControl.TransportControl.StandbyOn:
-                        sb.Append("StandbyOn");
-                        break;
+                        return ("StandbyOn");
                     case TransportControl.TransportControl.Eject:
-                        sb.Append("Eject");
-                        break;
+                        return ("Eject");
                     case TransportControl.TransportControl.FastFwd:
-                        sb.Append("FastFwd");
-                        break;
+                        return ("FastFwd");
                     case TransportControl.TransportControl.JogFwd:
-                        sb.Append("JogFwd");
-                        break;
+                        return ("JogFwd");
                     case TransportControl.TransportControl.VarFwd:
-                        sb.Append("VarFwd");
-                        break;
+                        return ("VarFwd");
                     case TransportControl.TransportControl.ShuttleFwd:
-                        sb.Append("ShuttleFwd");
-                        break;
+                        return ("ShuttleFwd");
                     case TransportControl.TransportControl.Rewind:
-                        sb.Append("Rewind");
-                        break;
+                        return ("Rewind");
                     case TransportControl.TransportControl.JogRev:
-                        sb.Append("JogRev");
-                        break;
+                        return ("JogRev");
                     case TransportControl.TransportControl.VarRev:
-                        sb.Append("VarRev");
-                        break;
+                        return ("VarRev");
                     case TransportControl.TransportControl.ShuttleRev:
-                        sb.Append("ShuttleRev");
-                        break;
+                        return ("ShuttleRev");
                     case TransportControl.TransportControl.Preroll:
-                        sb.Append("Preroll");
-                        break;
+                        return ("Preroll");
                     case TransportControl.TransportControl.CueUpWithData:
-                        sb.Append("CueUpWithData");
-                        break;
+                        return ("CueUpWithData");
                 }
                 break;
 
-            case Cmd1.PresetSelectControl:
+            case CommandFunction.PresetSelectControl:
                 break;
 
-            case Cmd1.SenseRequest:
+            case CommandFunction.SenseRequest:
                 switch ((SenseRequest.SenseRequest)Cmd2)
                 {
                     case SenseRequest.SenseRequest.TcGenSense:
-                        sb.Append("TcGenSense");
-                        break;
+                        return ("TcGenSense");
                     case SenseRequest.SenseRequest.CurrentTimeSense:
-                        sb.Append("CurrentTimeSense");
-                        break;
+                        return ("CurrentTimeSense");
                     case SenseRequest.SenseRequest.StatusSense:
-                        sb.Append("StatusSense");
-                        break;
+                        return ("StatusSense");
                 }
                 break;
 
-            case Cmd1.SenseReturn:
-                sb.Append("SenseReturn");
-                break;
+            case CommandFunction.SenseReturn:
+                return ("SenseReturn");
+
+            case CommandFunction.rrrReturn:
+                return ("rrrReturn");
 
             default:
-                sb.Append("Unknown");
-                break;
+                return ("Unknown");
         }
 
-        return sb.ToString();
+        return ("Unknown");
     }
 
     #endregion

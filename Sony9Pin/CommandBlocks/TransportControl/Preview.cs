@@ -10,7 +10,7 @@ public class Preview : CommandBlock
     /// </summary>
     public Preview()
     {
-        Cmd1 = Cmd1.TransportControl;
+        Cmd1 = CommandFunction.TransportControl;
         Cmd2 = (byte)TransportControl.Preview;
     }
 }

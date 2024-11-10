@@ -8,7 +8,7 @@ public class BMDClip : CommandBlock
     /// </summary>
     public BMDClip()
     {
-        Cmd1 = (Cmd1)0x8;
+        Cmd1 = CommandFunction.rrrReturn;
         Cmd2 = (byte)BlackmagicExtensions.BMDClip;
     }
 }

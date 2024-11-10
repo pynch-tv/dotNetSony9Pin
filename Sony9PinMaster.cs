@@ -18,6 +18,10 @@ public class Sony9PinMaster : Sony9PinBase
 {
     public string Model { get; internal set; } = "";
 
+    public string Manufacturer { get; private set; } = "Generic";
+
+    public string ManufacturerShort { get; private set; } = "Generic";
+
     private StatusData _statusData = new();
 
     private TimeCode _timeCode = new();
@@ -302,6 +306,19 @@ public class Sony9PinMaster : Sony9PinBase
         _serialReaderWorker.RunWorkerAsync();
         _idleWorker.RunWorkerAsync();
 
+        var dtr = SendAsync(new DeviceTypeRequest());
+        if (null != dtr)
+        {
+            var cb = dtr.Result;
+            var deviceId = (ushort)(cb.Data[0] << 8 | cb.Data[1]);
+            if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+            {
+                this.Manufacturer = deviceDescription.Manufacturer;
+                this.ManufacturerShort = deviceDescription.ManufacturerShort;
+                this.Model = deviceDescription.Model;
+            }
+        }
+
         return true;
     }
 
@@ -568,12 +585,14 @@ public class Sony9PinMaster : Sony9PinBase
 
             if (_currentTimeSenseOrStatusSense == 0)
             {
-                _ = SendAsync(new StatusSense()).Result;
+                var ss = SendAsync(new StatusSense()).Result;
+                ProcessResponse(ss);
                 Debug.WriteLine($"==============================================================");
             }
             else if (_currentTimeSenseOrStatusSense == 1)
             {
-                _ = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                var tsr = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                ProcessResponse(tsr);
                 Debug.WriteLine($"==============================================================");
             }
 

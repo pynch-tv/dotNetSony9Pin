@@ -9,9 +9,12 @@ public class ProgSpeedPlayPlus : CommandBlock
     ///     This command Play back the _slave device in steps of 0.1% within the range of +/- 25.5% of Play speed. DATA-1
     ///     contains an 8-bit speed value. The deviation from nominal Play speed is: Deviation(%)=0.1 x speed value
     /// </summary>
-    public ProgSpeedPlayPlus()
+    public ProgSpeedPlayPlus(int speed)
     {
-        Cmd1 = CommandFunction.TransportControl;
+        var data = new byte[] { (byte) speed };
+
+        Cmd1DataCount = ToCmd1DataCount(CommandFunction.TransportControl, data.Length);
         Cmd2 = (byte)TransportControl.ProgSpeedPlayPlus;
+        Data = data;
     }
 }

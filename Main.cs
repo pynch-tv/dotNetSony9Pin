@@ -1,7 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Diagnostics;
 using lathoub.dotNetSony9Pin;
-using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 using lathoub.dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 using lathoub.dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 

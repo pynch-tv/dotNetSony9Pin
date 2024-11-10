@@ -46,6 +46,11 @@ public enum CommandFunction : byte
     xxxRequest = 0xA,
 
     /// <summary>
+    ///     evsRequest.
+    /// </summary>
+    evsRequest = 0xB,
+
+    /// <summary>
     ///     TapeControl.
     /// </summary>
     TapeControl = 0xC,

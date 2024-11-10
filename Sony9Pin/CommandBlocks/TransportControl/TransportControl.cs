@@ -106,6 +106,11 @@ public enum TransportControl : byte
     CueUpWithData = 0x31,
 
     /// <summary>
+    ///     .
+    /// </summary>
+    RecordCueUpWithData = Record,
+
+    /// <summary>
     ///     The sync play.
     /// </summary>
     SyncPlay = 0x34,

@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
     <PackageId />
     <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>dotnet Sony9Pin</Title>
+    <RepositoryUrl>https://github.com/lathoub/dotNetSony9Pin</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>Pynch 2024</Copyright>
+    <Description>dotnet Sony9Pin library</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>sony9pin dotnet csharp</PackageTags>
+    <PackageOutputPath>C:\Users\Bart\Documents\nuget-feeds</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +37,13 @@
     <Folder Include="Sony9Pin\CommandBlocks\TapeControl\" />
     <Folder Include="Sony9Pin\CommandBlocks\zzzReturn\" />
     <Folder Include="Sony9Pin\CommandBlocks\xxxRequest\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\lathoub.dotNetHyperDeck\dotnetHyperDeck\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

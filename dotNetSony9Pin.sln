@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotNetSony9Pin", "dotNetSony9Pin\dotNetSony9Pin.csproj", "{A408B8DD-6D02-4A24-B95F-71455CA29494}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnetSony9Pin.Examples", "dotnetSony9Pin.Examples\dotnetSony9Pin.Examples.csproj", "{E8201B98-A1CF-49A1-B8A4-11FD0046E5E5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A408B8DD-6D02-4A24-B95F-71455CA29494}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A408B8DD-6D02-4A24-B95F-71455CA29494}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A408B8DD-6D02-4A24-B95F-71455CA29494}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A408B8DD-6D02-4A24-B95F-71455CA29494}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8201B98-A1CF-49A1-B8A4-11FD0046E5E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8201B98-A1CF-49A1-B8A4-11FD0046E5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8201B98-A1CF-49A1-B8A4-11FD0046E5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8201B98-A1CF-49A1-B8A4-11FD0046E5E5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF694E8F-626A-44CF-B40A-18E4878BD9C6}
+	EndGlobalSection
+EndGlobal

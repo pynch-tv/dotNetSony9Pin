@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId />
-    <OutputType>Library</OutputType>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>dotnet Sony9Pin</Title>
     <RepositoryUrl>https://github.com/lathoub/dotNetSony9Pin</RepositoryUrl>
@@ -15,13 +14,10 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>sony9pin dotnet csharp</PackageTags>
     <PackageOutputPath>C:\Users\Bart\Documents\nuget-feeds</PackageOutputPath>
+    <AssemblyVersion>1.0.9097.0</AssemblyVersion>
+    <FileVersion>1.0.9097.0</FileVersion>
+    <Version>$(FileVersion)</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="HyperDeck2.cs" />
-    <Compile Remove="HyperDeckException.cs" />
-    <Compile Remove="Main.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove=".gitignore" />
@@ -34,13 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Sony9Pin\CommandBlocks\TapeControl\" />
-    <Folder Include="Sony9Pin\CommandBlocks\zzzReturn\" />
-    <Folder Include="Sony9Pin\CommandBlocks\xxxRequest\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\lathoub.dotNetHyperDeck\dotnetHyperDeck\README.md">
+    <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

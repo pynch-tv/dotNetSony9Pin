@@ -1,3 +1,4 @@
+![example workflow](https://github.com/lathoub/dotNetSony9Pin/actions/workflows/dotnet.yml/badge.svg)
 # dotNetSony9Pin
 
 A .Net Core (C#) library to control a video recorder using the Sony 9-Pin protocol. The Odetics protocol is a superset of the Sony 9pin protocol.

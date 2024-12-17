@@ -13,7 +13,6 @@
     <Description>dotnet Sony9Pin library</Description>
     <RepositoryType>git</RepositoryType>
     <PackageTags>sony9pin dotnet csharp</PackageTags>
-    <PackageOutputPath>C:\Users\Bart\Documents\nuget-feeds</PackageOutputPath>
     <AssemblyVersion>1.0.9097.0</AssemblyVersion>
     <FileVersion>1.0.9097.0</FileVersion>
     <Version>$(FileVersion)</Version>

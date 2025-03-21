@@ -2,6 +2,41 @@
 using dotNetSony9Pin;
 using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
+using System.IO.Ports;
+using System.Net.Sockets;
+
+SerialPort serialPort = new();
+
+TcpClient socket = new(); 
+
+Stream OpenSerialStream(string port)
+{
+    serialPort.PortName = port;
+    serialPort.BaudRate = 38400;
+    serialPort.DataBits = 8;
+    serialPort.StopBits = StopBits.One;
+    serialPort.Parity = Parity.Odd;
+    serialPort.Handshake = Handshake.None;
+    serialPort.DtrEnable = true;
+    serialPort.RtsEnable = true;
+
+    serialPort.ReadTimeout = 250;
+
+    serialPort.Open();
+
+    return serialPort.BaseStream;
+}
+
+Stream OpenSocketStream(string hostPort)
+{
+    var parts = hostPort.Split(':');
+    var host = parts[0];
+    var port = int.Parse(parts[1]); // defauls to 9096
+
+    socket = new TcpClient(host, port);
+
+    return socket.GetStream();
+}
 
 //var ports = Sony9PinMaster.DiscoverPorts();
 //if (ports.Count == 0)
@@ -14,7 +49,7 @@ using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 
 var master = new Sony9PinMaster();
 
-master.Open("COM3");
+master.Open("192.168.0.13:9096", OpenSocketStream);
 
 try
 {

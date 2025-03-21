@@ -258,7 +258,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    public static NameValueCollection DiscoverPorts(string[] serialPorts)
+    public static NameValueCollection DiscoverPorts(string[] serialPorts, ProtocolCallBack aa)
     {
         var activePorts = new NameValueCollection();
 
@@ -273,7 +273,7 @@ public class Sony9PinMaster : Sony9PinBase
                 // 2.Probe for response
                 // 
                 // If both are successful, the port is considered active
-                if (!bvw75.Probe(serialPort))
+                if (!bvw75.Probe(serialPort, aa))
                     activePorts.Add(serialPort, string.Empty);
                 else
                     activePorts.Add(serialPort, bvw75.Model);
@@ -291,10 +291,10 @@ public class Sony9PinMaster : Sony9PinBase
     /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public override bool Open(string port)
+    public override bool Open(string port, ProtocolCallBack aa)
     {
         // step 1. Open the serial port
-        if (!base.Open(port))
+        if (!base.Open(port, aa))
             return false;
 
         // Start the ReaderWorker so that we can send a Command
@@ -331,10 +331,10 @@ public class Sony9PinMaster : Sony9PinBase
     /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public bool Probe(string port)
+    public bool Probe(string port, ProtocolCallBack aa)
     {
         // step 1. Open the serial port
-        if (!base.Open(port))
+        if (!base.Open(port, aa))
             return false;
 
         _serialReaderWorker.RunWorkerAsync(argument: this);
@@ -505,7 +505,7 @@ public class Sony9PinMaster : Sony9PinBase
 
         while (!worker.CancellationPending)
         {
-            if (!_serialPort.IsOpen)
+            if (!_stream.CanRead)
                 break;
 
             //
@@ -515,8 +515,7 @@ public class Sony9PinMaster : Sony9PinBase
             // Flush serial buffers, both in and out
             lock (_lock)
             {
-                _serialPort.DiscardInBuffer();
-                _serialPort.DiscardOutBuffer();
+                _stream.Flush();
             }
             // Make sure we have an empty buffer
             InputBuffer.Clear();
@@ -528,9 +527,9 @@ public class Sony9PinMaster : Sony9PinBase
 
                 // Read characters from the serialPort until we can create a 
                 // complete and valid CommandBlock
-                while (_serialPort.IsOpen)
+                while (_stream.CanRead)
                 {
-                    var b = _serialPort.ReadByte();
+                    var b = _stream.ReadByte();
                     if (b == -1)
                         break; // No more data to read
                     InputBuffer.Add((byte)b);
@@ -547,15 +546,15 @@ public class Sony9PinMaster : Sony9PinBase
                     //                    Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
                     //                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
 
-                    var btr = _serialPort.BytesToRead;
-                    if (btr > 0)
-                    {
-                        Debug.WriteLine($"{btr} bytes remaining to be read??");
-                        for (int i = 0; i < btr; i++)
-                        {
-                            Debug.WriteLine($"0x{_serialPort.ReadByte():X}");
-                        }
-                    }
+                    //var btr = _serialPort.BytesToRead;
+                    //if (btr > 0)
+                    //{
+                    //    Debug.WriteLine($"{btr} bytes remaining to be read??");
+                    //    for (int i = 0; i < btr; i++)
+                    //    {
+                    //        Debug.WriteLine($"0x{_serialPort.ReadByte():X}");
+                    //    }
+                    //}
 
                     IsConnected = true;
 
@@ -649,8 +648,8 @@ public class Sony9PinMaster : Sony9PinBase
         var bytes = req.ToBytes();
         lock (_lock)
         {
-            if (_serialPort.IsOpen)
-                _serialPort.Write(bytes, 0, bytes.Length);
+            if (null != _stream && _stream.CanWrite)
+                _stream.Write(bytes, 0, bytes.Length);
             //else
             //    throw new ArgumentException("_serialPort closed");
         }

@@ -13,8 +13,8 @@
     <Description>dotnet Sony9Pin library</Description>
     <RepositoryType>git</RepositoryType>
     <PackageTags>sony9pin dotnet csharp</PackageTags>
-    <AssemblyVersion>1.0.9097.0</AssemblyVersion>
-    <FileVersion>1.0.9097.0</FileVersion>
+    <AssemblyVersion>1.0.9102.0</AssemblyVersion>
+    <FileVersion>1.0.9102.0</FileVersion>
     <Version>$(FileVersion)</Version>
   </PropertyGroup>
 
@@ -33,6 +33,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Louth\" />
   </ItemGroup>
 
 </Project>

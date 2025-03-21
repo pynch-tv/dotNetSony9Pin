@@ -1,13 +1,12 @@
-﻿using System.IO.Ports;
-using dotNetSony9Pin.Sony9Pin.CommandBlocks;
+﻿using dotNetSony9Pin.Sony9Pin.CommandBlocks;
 
 namespace dotNetSony9Pin.Pattern;
 
+public delegate Stream ProtocolCallBack(string port);
+
 public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBlock>, IDisposable
 {
-    protected readonly SerialPort _serialPort = new();
-
-    public string Port => _serialPort.PortName;
+    protected Stream? _stream;
 
     private bool _disposed;
 
@@ -21,20 +20,9 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// </summary>
     /// <param name="host"></param>
     /// <param name="port"></param>
-    public virtual bool Open(string port)
+    public virtual bool Open(string port, ProtocolCallBack callback)
     {
-        _serialPort.PortName = port;
-        _serialPort.BaudRate = 38400;
-        _serialPort.DataBits = 8;
-        _serialPort.StopBits = StopBits.One;
-        _serialPort.Parity = Parity.Odd;
-        _serialPort.Handshake = Handshake.None;
-        _serialPort.DtrEnable = true;
-        _serialPort.RtsEnable = true;
-
-        _serialPort.ReadTimeout = 250;
-
-        _serialPort.Open();
+        _stream = callback(port);
 
         return true;
     }
@@ -45,7 +33,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <returns></returns>
     public virtual void Close()
     {
-        _serialPort.Close();
+//        _serialPort.Close();
     }
 
     /// <summary>

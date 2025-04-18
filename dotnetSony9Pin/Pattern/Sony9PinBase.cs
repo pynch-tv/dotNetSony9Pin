@@ -1,4 +1,5 @@
 ﻿using dotNetSony9Pin.Sony9Pin.CommandBlocks;
+using Pynch.Tools;
 
 namespace dotNetSony9Pin.Pattern;
 
@@ -18,8 +19,8 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="host"></param>
     /// <param name="port"></param>
+    /// <param name="callback"></param>
     public virtual bool Open(string port, ProtocolCallBack callback)
     {
         _stream = callback(port);

@@ -23,8 +23,6 @@ public class Sony9PinMaster : Sony9PinBase
 
     private StatusData _statusData = new();
 
-    private TimeCode _timeCode = new();
-
     public StatusData StatusData
     {
         get => _statusData;
@@ -44,10 +42,7 @@ public class Sony9PinMaster : Sony9PinBase
         }
     }
 
-    public TimeCode TimeCode
-    {
-        get => _timeCode;
-    }
+    public TimeCode TimeCode { get; private set; } = new();
 
     #region Events and EventHandlers
 
@@ -206,13 +201,13 @@ public class Sony9PinMaster : Sony9PinBase
     private readonly BackgroundWorker _serialReaderWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
     private readonly BackgroundWorker _idleWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
 
-    private AutoResetEvent _requestReady = new(false);
+    private readonly AutoResetEvent _requestReady = new(false);
 
-    private AutoResetEvent _fireIdleCommand = new(false);
+    private readonly AutoResetEvent _fireIdleCommand = new(false);
 
-    private System.Timers.Timer _idleTimer = new();
+    private readonly System.Timers.Timer _idleTimer = new();
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     private bool? _connected = null;
 
@@ -304,11 +299,6 @@ public class Sony9PinMaster : Sony9PinBase
         if (_serialReaderWorker.IsBusy)
         {
             var dtr = SendAsync(new DeviceTypeRequest()).Result;
-            if (null == dtr)
-            {
-                Close();
-                return false;
-            }
 
             var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
             if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
@@ -341,7 +331,6 @@ public class Sony9PinMaster : Sony9PinBase
 
         // step 2. Send a DeviceTypeRequest
         var dtr = SendAsync(new DeviceTypeRequest()).Result;
-        if (null != dtr)
         {
             var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
             if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
@@ -357,7 +346,7 @@ public class Sony9PinMaster : Sony9PinBase
 
         base.Close();
 
-        return null != dtr;
+        return true;
     }
 
     /// <summary>
@@ -383,7 +372,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <param name="res">
     ///     The response.
     /// </param>
-    public void ProcessResponse(CommandBlock res)
+    public void ProcessResponse(CommandBlock? res)
     {
         if (null == res)
             return;
@@ -464,16 +453,16 @@ public class Sony9PinMaster : Sony9PinBase
                     case SenseReturn.HoldVitcTimeData:
                     case SenseReturn.HoldUbVitcData:
                         var timeCode = new TimeCode(res.Data);
-                        if (!timeCode.Equals(_timeCode))
+                        if (!timeCode.Equals(TimeCode))
                         {
-                            RaiseTimeDataChangingHandler((SenseReturn)res.Cmd2, _timeCode);
+                            RaiseTimeDataChangingHandler((SenseReturn)res.Cmd2, TimeCode);
                             lock (this)
                             {
-                                _timeCode = timeCode;
+                                TimeCode = timeCode;
                             }
-                            RaiseTimeDataChangedHandler((SenseReturn)res.Cmd2, _timeCode);
+                            RaiseTimeDataChangedHandler((SenseReturn)res.Cmd2, TimeCode);
                         }
-                        RaiseTimeDataReceivedHandler((SenseReturn)res.Cmd2, _timeCode);
+                        RaiseTimeDataReceivedHandler((SenseReturn)res.Cmd2, TimeCode);
                         break;
 
                     case SenseReturn.StatusData:
@@ -501,11 +490,11 @@ public class Sony9PinMaster : Sony9PinBase
             throw new ArgumentNullException(nameof(sender));
 
         // Make sure we have an empty buffer
-        List<byte>? InputBuffer = new(32);
+        List<byte>? inputBuffer = new(32);
 
         while (!worker.CancellationPending)
         {
-            if (!_stream.CanRead)
+            if (_stream is { CanRead: false })
                 break;
 
             //
@@ -515,10 +504,10 @@ public class Sony9PinMaster : Sony9PinBase
             // Flush serial buffers, both in and out
             lock (_lock)
             {
-                _stream.Flush();
+                _stream?.Flush();
             }
             // Make sure we have an empty buffer
-            InputBuffer.Clear();
+            inputBuffer.Clear();
 
             try
             {
@@ -527,17 +516,17 @@ public class Sony9PinMaster : Sony9PinBase
 
                 // Read characters from the serialPort until we can create a 
                 // complete and valid CommandBlock
-                while (_stream.CanRead)
+                while (_stream is { CanRead: true })
                 {
                     var b = _stream.ReadByte();
                     if (b == -1)
                         break; // No more data to read
-                    InputBuffer.Add((byte)b);
+                    inputBuffer.Add((byte)b);
 
                     if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + 3) // add some margin
                         throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
-                    if (!CommandBlock.TryParse(InputBuffer, out CommandBlock? res))
+                    if (!CommandBlock.TryParse(inputBuffer, out var res))
                         continue;
                     if (null == res) continue;
 
@@ -572,7 +561,7 @@ public class Sony9PinMaster : Sony9PinBase
 
                 IsConnected = false;
 
-                Received(null); // return error object
+                Received(null!); // return error object
             }
             catch (Exception)
             {
@@ -604,7 +593,7 @@ public class Sony9PinMaster : Sony9PinBase
     {
         Debug.WriteLine("Sony9PinMaster Starting IdleReader");
 
-        int _currentTimeSenseOrStatusSense = 0;
+        var _currentTimeSenseOrStatusSense = 0;
 
         if (sender is not BackgroundWorker worker)
             throw new ArgumentNullException(nameof(sender));
@@ -620,13 +609,18 @@ public class Sony9PinMaster : Sony9PinBase
             Debug.Assert(_serialReaderWorker.IsBusy, "SerialReaderWorker is busy");
             Debug.Assert(_serialReaderWorker.CancellationPending == false, "SerialReaderWorker CancellationPending");
 
-            if (_currentTimeSenseOrStatusSense == 0)
+            switch (_currentTimeSenseOrStatusSense)
             {
-                var r = this.SendAsync(new StatusSense()).Result;
-            }
-            else if (_currentTimeSenseOrStatusSense == 1)
-            {
-                var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                case 0:
+                {
+                    var r = this.SendAsync(new StatusSense()).Result;
+                    break;
+                }
+                case 1:
+                {
+                    var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                    break;
+                }
             }
 
             _currentTimeSenseOrStatusSense++;
@@ -648,10 +642,8 @@ public class Sony9PinMaster : Sony9PinBase
         var bytes = req.ToBytes();
         lock (_lock)
         {
-            if (null != _stream && _stream.CanWrite)
+            if (_stream is { CanWrite: true })
                 _stream.Write(bytes, 0, bytes.Length);
-            //else
-            //    throw new ArgumentException("_serialPort closed");
         }
     }
 

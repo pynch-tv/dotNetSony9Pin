@@ -1,9 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
+
 using dotNetSony9Pin;
-using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 using System.IO.Ports;
 using System.Net.Sockets;
+using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
+using dotNetSony9Pin.Odetics.CommandBlocks.xxxRequest;
 
 SerialPort serialPort = new();
 
@@ -49,20 +51,21 @@ Stream OpenSocketStream(string hostPort)
 
 var master = new Sony9PinMaster();
 
-master.Open("192.168.0.13:9096", OpenSocketStream);
+//master.Open("192.168.0.13:9096", OpenSocketStream);
+master.Open("COM5", OpenSerialStream);
 
 try
 {
-    _ = master.SendAsync(new DeviceTypeRequest()).Result;
+    var t1 = await master.SendAsync(new DeviceTypeRequest());
+    var t2 = await master.SendAsync(new DeviceTypeRequest());
+    var t3 = await master.SendAsync(new DeviceTypeRequest());
 
-    //_ = master.SendAsync(new ListNextID(0)).Result;
-    //Debug.WriteLine(Sony9PinMaster.ParseResponse(t2));
+  //      _ = master.SendAsync(new ListNextID(0)).Result;
 
-    //_ = master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0)).Result;
-    //Debug.WriteLine(t2);
+      var a2 = await master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0));
+    //  Debug.WriteLine(t2);
 
-    _ = master.SendAsync(new BMDClip()).Result;
-
+//    var ee = await master.SendAsync(new BMDClip());
 }
 catch (Exception ex)
 {

@@ -54,7 +54,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler<ConnectedEventArgs>? ConnectedChanged;
+    public event EventHandler<bool>? ConnectedChanged;
 
     /// <summary>
     /// 
@@ -106,7 +106,7 @@ public class Sony9PinMaster : Sony9PinBase
     protected virtual void RaiseConnectedChanged(bool connected)
     {
         var handler = ConnectedChanged;
-        handler?.Invoke(this, new ConnectedEventArgs(connected));
+        handler?.Invoke(this, connected);
     }
 
     protected virtual void RaiseNakHandler(NakCommandBlock.Nak error)
@@ -253,7 +253,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    public static NameValueCollection DiscoverPorts(string[] serialPorts, ProtocolCallBack aa)
+    public static async Task<NameValueCollection> DiscoverPorts(string[] serialPorts, ProtocolCallBack aa)
     {
         var activePorts = new NameValueCollection();
 
@@ -268,7 +268,7 @@ public class Sony9PinMaster : Sony9PinBase
                 // 2.Probe for response
                 // 
                 // If both are successful, the port is considered active
-                if (!bvw75.Probe(serialPort, aa))
+                if (! await bvw75.Probe(serialPort, aa))
                     activePorts.Add(serialPort, string.Empty);
                 else
                     activePorts.Add(serialPort, bvw75.model);
@@ -288,10 +288,10 @@ public class Sony9PinMaster : Sony9PinBase
     /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public override bool Open(string port, ProtocolCallBack aa)
+    public override async Task<bool> Open(string port, ProtocolCallBack aa)
     {
         // step 1. Open the serial port
-        if (!base.Open(port, aa))
+        if (! await base.Open(port, aa))
             return false;
 
         // Start the ReaderWorker so that we can send a Command
@@ -300,7 +300,7 @@ public class Sony9PinMaster : Sony9PinBase
 
         if (_serialReaderWorker.IsBusy)
         {
-            var dtr = SendAsync(new DeviceTypeRequest()).Result;
+            var dtr = await SendAsync(new DeviceTypeRequest());
 
             var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
             if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
@@ -323,16 +323,16 @@ public class Sony9PinMaster : Sony9PinBase
     /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public bool Probe(string port, ProtocolCallBack aa)
+    public async Task<bool> Probe(string port, ProtocolCallBack callback)
     {
         // step 1. Open the serial port
-        if (!base.Open(port, aa))
+        if (! await base.Open(port, callback))
             return false;
 
         _serialReaderWorker.RunWorkerAsync(argument: this);
 
         // step 2. Send a DeviceTypeRequest
-        var dtr = SendAsync(new DeviceTypeRequest()).Result;
+        var dtr = await SendAsync(new DeviceTypeRequest());
         {
             if (null == dtr)
                 return false;

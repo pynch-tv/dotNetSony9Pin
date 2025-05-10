@@ -21,7 +21,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// </summary>
     /// <param name="port"></param>
     /// <param name="callback"></param>
-    public virtual bool Open(string port, ProtocolCallBack callback)
+    public virtual async Task<bool> Open(string port, ProtocolCallBack callback)
     {
         _stream = callback(port);
 

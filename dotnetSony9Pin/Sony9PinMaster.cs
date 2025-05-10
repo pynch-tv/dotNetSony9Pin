@@ -16,10 +16,10 @@ namespace dotNetSony9Pin;
 
 public class Sony9PinMaster : Sony9PinBase
 {
-    public string Model { get; internal set; } = "";
+    public string model { get; internal set; } = "";
 
-    public string Manufacturer { get; private set; } = "Generic";
-    public string ManufacturerShort { get; private set; } = "Generic";
+    public string manufacturer { get; private set; } = "Generic";
+    public string manufacturerShort { get; private set; } = "Generic";
 
     private StatusData _statusData = new();
 
@@ -214,7 +214,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     ///     Gets or sets the port name.
     /// </summary>
-    public bool IsConnected
+    public bool isConnected
     {
         get => _connected == true;
 
@@ -271,7 +271,9 @@ public class Sony9PinMaster : Sony9PinBase
                 if (!bvw75.Probe(serialPort, aa))
                     activePorts.Add(serialPort, string.Empty);
                 else
-                    activePorts.Add(serialPort, bvw75.Model);
+                    activePorts.Add(serialPort, bvw75.model);
+
+                bvw75.Dispose();
             }
             catch (Exception)
             {
@@ -303,9 +305,9 @@ public class Sony9PinMaster : Sony9PinBase
             var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
             if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
             {
-                Manufacturer = deviceDescription.Manufacturer;
-                ManufacturerShort = deviceDescription.ManufacturerShort;
-                Model = deviceDescription.Model;
+                manufacturer = deviceDescription.Manufacturer;
+                manufacturerShort = deviceDescription.ManufacturerShort;
+                model = deviceDescription.Model;
             }
         }
 
@@ -332,12 +334,15 @@ public class Sony9PinMaster : Sony9PinBase
         // step 2. Send a DeviceTypeRequest
         var dtr = SendAsync(new DeviceTypeRequest()).Result;
         {
+            if (null == dtr)
+                return false;
+
             var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
             if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
             {
-                Manufacturer = deviceDescription.Manufacturer;
-                ManufacturerShort = deviceDescription.ManufacturerShort;
-                Model = deviceDescription.Model;
+                manufacturer = deviceDescription.Manufacturer;
+                manufacturerShort = deviceDescription.ManufacturerShort;
+                model = deviceDescription.Model;
             }
         }
 
@@ -428,9 +433,9 @@ public class Sony9PinMaster : Sony9PinBase
                                 device = BitConverter.ToString(res.Data).Replace("-", string.Empty);
                             else
                                 device = deviceDescription.Model;
-                            Model = device ?? "Unknown";
+                            model = device ?? "Unknown";
 
-                            RaiseDeviceTypeHandler(Model);
+                            RaiseDeviceTypeHandler(model);
                         }
                         break;
                 }
@@ -545,7 +550,7 @@ public class Sony9PinMaster : Sony9PinBase
                     //    }
                     //}
 
-                    IsConnected = true;
+                    isConnected = true;
 
                     ProcessResponse(res);
 
@@ -559,7 +564,7 @@ public class Sony9PinMaster : Sony9PinBase
                 // Oei - a character couldn't be read within the time given.
                 Debug.WriteLine(ex.Message);
 
-                IsConnected = false;
+                isConnected = false;
 
                 Received(null!); // return error object
             }
@@ -578,7 +583,7 @@ public class Sony9PinMaster : Sony9PinBase
         _workerThreadStopped.Set(); // signal that worker is done
 
         // Indicate here that we have been disconnected
-        IsConnected = false;
+        isConnected = false;
 
         Debug.WriteLine("Sony9PinMaster Stopped QueueReader");
     }

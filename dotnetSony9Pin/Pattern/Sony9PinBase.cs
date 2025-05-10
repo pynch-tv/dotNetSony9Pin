@@ -34,7 +34,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <returns></returns>
     public virtual void Close()
     {
-//        _serialPort.Close();
+        _stream?.Dispose();
     }
 
     /// <summary>

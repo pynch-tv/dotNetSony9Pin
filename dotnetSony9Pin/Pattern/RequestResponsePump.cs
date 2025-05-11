@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics;
 
-namespace dotNetSony9Pin.Pattern;
+namespace Pynch.Tools;
 
-public abstract class RequestResponsePump<T, U>
+public abstract class RequestResponsePump<TRequest, TResponse>
 {
     #region Events
 
-    private event EventHandler<U>? ReceivedResponse;
+    private event EventHandler<TResponse>? ReceivedResponse;
 
-    private void RaiseResponse(U response)
+    private void RaiseResponse(TResponse response)
     {
         var handler = ReceivedResponse;
         handler?.Invoke(this, response);
@@ -16,30 +16,23 @@ public abstract class RequestResponsePump<T, U>
 
     #endregion
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     /// <summary>
     /// Only Async Send method
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    public virtual Task<U>? SendAsync(T req)
+    public virtual Task<TResponse> SendAsync(TRequest req)
     {
         lock (_lock)
         {
             Stopwatch stopwatch = new();
             stopwatch.Start();
 
-            //Debug.WriteLine($"SendAsync: {req}");
+            var promise = new TaskCompletionSource<TResponse>();
 
-            var promise = new TaskCompletionSource<U>();
-
-            void handler(object? sender, U e)
-            {
-                ReceivedResponse -= handler;
-                promise.TrySetResult(e);
-            }
-            ReceivedResponse += handler;
+            ReceivedResponse += Handler;
 
             Send(req);
 
@@ -52,24 +45,27 @@ public abstract class RequestResponsePump<T, U>
             }
 
             stopwatch.Stop();
-            //Debug.WriteLine($"Sony9Pin roundtrip: {stopwatch.ElapsedMilliseconds} ms");
 
             return promise.Task;
+
+            void Handler(object? sender, TResponse e)
+            {
+                ReceivedResponse -= Handler;
+                promise.TrySetResult(e);
+            }
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    protected abstract void Send(T req);
+    protected abstract void Send(TRequest req);
 
     /// <summary>
     /// 
     /// </summary>
-    protected virtual void Received(U res)
+    protected virtual void Received(TResponse res)
     {
-        //Debug.WriteLine($"Response: {res?.ToString()}");
-
         RaiseResponse(res);
     }
 

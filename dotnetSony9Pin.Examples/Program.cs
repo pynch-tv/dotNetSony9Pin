@@ -1,33 +1,89 @@
 ﻿// See https://aka.ms/new-console-template for more information
+
 using dotNetSony9Pin;
-using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
+using System.IO.Ports;
+using System.Net.Sockets;
+using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
+using dotNetSony9Pin.Odetics.CommandBlocks.xxxRequest;
+using System.Collections.Specialized;
 
-//var ports = Sony9PinMaster.DiscoverPorts();
-//if (ports.Count == 0)
-//{
-//    Console.WriteLine("No ports found");
-//    return;
-//}
+SerialPort serialPort = new();
 
-//var firstPort = ports[0];
+TcpClient socket = new(); 
+
+Stream OpenSerialStream(string port)
+{
+    serialPort.PortName = port;
+    serialPort.BaudRate = 38400;
+    serialPort.DataBits = 8;
+    serialPort.StopBits = StopBits.One;
+    serialPort.Parity = Parity.Odd;
+    serialPort.Handshake = Handshake.None;
+    serialPort.DtrEnable = true;
+    serialPort.RtsEnable = true;
+
+    serialPort.ReadTimeout = 250;
+
+    serialPort.Open();
+
+    return serialPort.BaseStream;
+}
+
+Stream OpenSocketStream(string hostPort)
+{
+    var parts = hostPort.Split(':');
+    var host = parts[0];
+    var port = int.Parse(parts[1]); // defauls to 9096
+
+    socket = new TcpClient(host, port);
+
+    return socket.GetStream();
+}
+
+async Task<NameValueCollection> Discover()
+{
+    return await Sony9PinMaster.DiscoverPorts(SerialPort.GetPortNames(), OpenSerialStream);
+}
+
+
+var ports = await Discover();
+if (ports.Count == 0)
+{
+    Console.WriteLine("No devices found.");
+    return;
+}
 
 var master = new Sony9PinMaster();
 
-master.Open("COM3");
+master.StatusDataChanged += (sender, e) =>
+{
+    Console.WriteLine($"Status Data Changed: {e.StatusData}");
+};
+
+master.TimeDataChanged += (sender, e) =>
+{
+    Console.WriteLine($"Time Data Changed: {e.TimeCode}");
+};
+
+if (!await master.Open(ports.AllKeys[0], OpenSerialStream))
+{
+    Console.WriteLine("Failed to open port.");
+    return;
+}
 
 try
 {
-    _ = master.SendAsync(new DeviceTypeRequest()).Result;
+    //var t1 = await master.SendAsync(new DeviceTypeRequest());
+    //var t2 = await master.SendAsync(new DeviceTypeRequest());
+    //var t3 = await master.SendAsync(new DeviceTypeRequest());
 
-    //_ = master.SendAsync(new ListNextID(0)).Result;
-    //Debug.WriteLine(Sony9PinMaster.ParseResponse(t2));
+    //var t4 = await master.SendAsync(new ListNextID());
 
-    //_ = master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0)).Result;
-    //Debug.WriteLine(t2);
+    //  var a2 = await master.SendAsync(new BMDPlay(1, false, false, PlayBackType.Play, 0));
+    //  Debug.WriteLine(t2);
 
-    _ = master.SendAsync(new BMDClip()).Result;
-
+//    var ee = await master.SendAsync(new BMDClip());
 }
 catch (Exception ex)
 {

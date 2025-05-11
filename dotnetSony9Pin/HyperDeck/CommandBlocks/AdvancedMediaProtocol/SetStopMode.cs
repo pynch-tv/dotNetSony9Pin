@@ -10,7 +10,7 @@ public enum StopMode : byte
     ShowBlack = 0x3,
 }
 
-internal class SetStopMode : CommandBlock
+public class SetStopMode : CommandBlock
 {
     /// <summary>
     /// 0 = Off

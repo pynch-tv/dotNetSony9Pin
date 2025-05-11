@@ -2,7 +2,7 @@
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 
-internal class AutoSkip : CommandBlock
+public class AutoSkip : CommandBlock
 {
     /// <summary>
     /// Number of clips to skip from current clip

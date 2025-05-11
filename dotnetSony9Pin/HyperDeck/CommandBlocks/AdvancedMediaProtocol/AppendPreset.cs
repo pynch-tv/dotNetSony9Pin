@@ -2,7 +2,7 @@
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 
-internal class AppendPreset : CommandBlock
+public class AppendPreset : CommandBlock
 {
     /// <summary>
     /// 2 Bytes for the length N of the clip name

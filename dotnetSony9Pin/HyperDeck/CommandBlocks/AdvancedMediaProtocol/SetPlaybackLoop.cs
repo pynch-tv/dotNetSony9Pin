@@ -2,7 +2,7 @@
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 
-internal class SetPlaybackLoop : CommandBlock
+public class SetPlaybackLoop : CommandBlock
 {
     /// <summary>
     /// Bit 0 loop mode enable, 0=false 1=true

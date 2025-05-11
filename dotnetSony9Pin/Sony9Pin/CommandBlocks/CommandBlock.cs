@@ -295,11 +295,7 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
                         return "Ack";
                     case Return.Return.DeviceType:
                         var deviceId = (ushort)(Data[0] << 8 | Data[1]);
-                        string device;
-                        if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
-                            device = BitConverter.ToString(Data).Replace("-", string.Empty);
-                        else
-                            device = deviceDescription.Model;
+                        var device = !Device.Names.TryGetValue(deviceId, out var deviceDescription) ? BitConverter.ToString(Data).Replace("-", string.Empty) : deviceDescription.Model;
                         return device ?? "Unknown";
                     case Return.Return.Nak:
                         var bits = new BitArray(new int[] { Data[0] });

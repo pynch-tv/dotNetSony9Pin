@@ -2,7 +2,7 @@
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 
-internal class ListNextID : CommandBlock
+public class ListNextID : CommandBlock
 {
     /// <summary>
     /// when x = 0 single clip request when x = 1,

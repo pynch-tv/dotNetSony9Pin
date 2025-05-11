@@ -253,7 +253,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    public static async Task<NameValueCollection> DiscoverPorts(string[] serialPorts, ProtocolCallBack aa)
+    public static async Task<NameValueCollection> DiscoverPorts(string[] serialPorts, ProtocolCallBack callback)
     {
         var activePorts = new NameValueCollection();
 
@@ -268,9 +268,7 @@ public class Sony9PinMaster : Sony9PinBase
                 // 2.Probe for response
                 // 
                 // If both are successful, the port is considered active
-                if (! await bvw75.Probe(serialPort, aa))
-                    activePorts.Add(serialPort, string.Empty);
-                else
+                if (await bvw75.Probe(serialPort, callback))
                     activePorts.Add(serialPort, bvw75.model);
 
                 bvw75.Dispose();

@@ -13,8 +13,8 @@
     <Description>dotnet Sony9Pin library</Description>
     <RepositoryType>git</RepositoryType>
     <PackageTags>sony9pin dotnet csharp</PackageTags>
-    <AssemblyVersion>1.0.9162.9261</AssemblyVersion>
-    <FileVersion>1.0.9162.9261</FileVersion>
+    <AssemblyVersion>1.0.9192.9262</AssemblyVersion>
+    <FileVersion>1.0.9192.9262</FileVersion>
     <Version>$(FileVersion)</Version>
   </PropertyGroup>
 

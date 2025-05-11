@@ -49,47 +49,47 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler<DeviceTypeEventArgs>? DeviceType;
+    public event EventHandler<DeviceTypeEventArgs>? OnDeviceType;
 
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler<bool>? ConnectedChanged;
+    public event EventHandler<bool>? OnConnectedChanged;
 
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler? Nak;
+    public event EventHandler? OnNak;
 
     /// <summary>
     /// 
     /// </summary>
-    public event EventHandler<StatusDataEventArgs>? StatusDataReceived;
+    public event EventHandler<StatusDataEventArgs>? OnStatusDataReceived;
 
     /// <summary>
     ///     The status data.
     /// </summary>
-    public event EventHandler<StatusDataEventArgs>? StatusDataChanged;
+    public event EventHandler<StatusDataEventArgs>? OnStatusDataChanged;
 
     /// <summary>
     ///     The status data.
     /// </summary>
-    public event EventHandler<StatusDataEventArgs>? StatusDataChanging;
+    public event EventHandler<StatusDataEventArgs>? OnStatusDataChanging;
 
     /// <summary>
     ///     The time data.
     /// </summary>
-    public event EventHandler<TimeDataEventArgs>? TimeDataReceived;
+    public event EventHandler<TimeDataEventArgs>? OnTimeDataReceived;
 
     /// <summary>
     ///     The time data.
     /// </summary>
-    public event EventHandler<TimeDataEventArgs>? TimeDataChanged;
+    public event EventHandler<TimeDataEventArgs>? OnTimeDataChanged;
 
     /// <summary>
     ///     The time data.
     /// </summary>
-    public event EventHandler<TimeDataEventArgs>? TimeDataChanging;
+    public event EventHandler<TimeDataEventArgs>? OnTimeDataChanging;
 
     /// <summary>
     ///     The raise device type handler.
@@ -99,19 +99,19 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseDeviceTypeHandler(string deviceName)
     {
-        var handler = DeviceType;
+        var handler = OnDeviceType;
         handler?.Invoke(this, new DeviceTypeEventArgs(deviceName));
     }
 
     protected virtual void RaiseConnectedChanged(bool connected)
     {
-        var handler = ConnectedChanged;
+        var handler = OnConnectedChanged;
         handler?.Invoke(this, connected);
     }
 
     protected virtual void RaiseNakHandler(NakCommandBlock.Nak error)
     {
-        var handler = Nak;
+        var handler = OnNak;
         handler?.Invoke(this, EventArgs.Empty);
     }
 
@@ -123,7 +123,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseStatusDataChangedHandler(StatusData statusData)
     {
-        var handler = StatusDataChanged;
+        var handler = OnStatusDataChanged;
         handler?.Invoke(this, new StatusDataEventArgs(statusData));
     }
 
@@ -135,7 +135,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseStatusDataChangingHandler(StatusData statusData)
     {
-        var handler = StatusDataChanging;
+        var handler = OnStatusDataChanging;
         handler?.Invoke(this, new StatusDataEventArgs(statusData));
     }
 
@@ -145,7 +145,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// <param name="statusData"></param>
     protected virtual void RaiseStatusDataReceivedHandler(StatusData statusData)
     {
-        var handler = StatusDataReceived;
+        var handler = OnStatusDataReceived;
         handler?.Invoke(this, new StatusDataEventArgs(statusData));
     }
 
@@ -160,7 +160,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseTimeDataReceivedHandler(SenseReturn senseReturn, TimeCode timeCode)
     {
-        var handler = TimeDataReceived;
+        var handler = OnTimeDataReceived;
         handler?.Invoke(this, new TimeDataEventArgs(senseReturn, timeCode));
     }
 
@@ -175,7 +175,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseTimeDataChangedHandler(SenseReturn senseReturn, TimeCode timeCode)
     {
-        var handler = TimeDataChanged;
+        var handler = OnTimeDataChanged;
         handler?.Invoke(this, new TimeDataEventArgs(senseReturn, timeCode));
     }
 
@@ -190,7 +190,7 @@ public class Sony9PinMaster : Sony9PinBase
     /// </param>
     protected virtual void RaiseTimeDataChangingHandler(SenseReturn senseReturn, TimeCode timeCode)
     {
-        var handler = TimeDataChanging;
+        var handler = OnTimeDataChanging;
         handler?.Invoke(this, new TimeDataEventArgs(senseReturn, timeCode));
     }
 
@@ -616,12 +616,12 @@ public class Sony9PinMaster : Sony9PinBase
             {
                 case 0:
                 {
-                    var r = this.SendAsync(new StatusSense()).Result;
+                    _ = SendAsync(new StatusSense()).Result;
                     break;
                 }
                 case 1:
                 {
-                    var r = this.SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                    _ = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
                     break;
                 }
             }

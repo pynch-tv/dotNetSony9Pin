@@ -42,7 +42,7 @@ public class Sony9PinMaster : Sony9PinBase
         }
     }
 
-    public TimeCode TimeCode { get; private set; } = new();
+    public TimeCode TimeCode { get; set; } = new();
 
     #region Events and EventHandlers
 

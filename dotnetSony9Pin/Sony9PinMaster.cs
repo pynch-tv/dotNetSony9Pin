@@ -23,6 +23,8 @@ public class Sony9PinMaster : Sony9PinBase
 
     private StatusData _statusData = new();
 
+    private TimeCode _timeCode = new();
+
     public StatusData StatusData
     {
         get => _statusData;
@@ -42,7 +44,23 @@ public class Sony9PinMaster : Sony9PinBase
         }
     }
 
-    public TimeCode TimeCode { get; set; } = new();
+    public TimeCode TimeCode {
+        get => _timeCode;
+
+        set
+        {
+            if (!_timeCode.Equals(value))
+            {
+                RaiseTimeDataChangingHandler(SenseReturn.LtcTimeData, _timeCode);
+                lock (this)
+                {
+                    _timeCode = value;
+                }
+                RaiseTimeDataChangedHandler(SenseReturn.LtcTimeData, _timeCode);
+            }
+            RaiseTimeDataReceivedHandler( SenseReturn.LtcTimeData, _timeCode);
+        }
+    }
 
     #region Events and EventHandlers
 

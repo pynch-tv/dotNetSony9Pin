@@ -12,3 +12,5 @@ public class BMDClip : CommandBlock
         Cmd2 = (byte)BlackmagicExtensions.BMDClip;
     }
 }
+
+

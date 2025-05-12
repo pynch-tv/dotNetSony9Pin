@@ -6,6 +6,8 @@ public class AutoSkip : CommandBlock
 {
     /// <summary>
     /// Number of clips to skip from current clip
+    /// 
+    /// 8-bit signed number of clips to skip from current clip
     /// </summary>
     /// <param name="numberOfClipsToSkip"></param>
     public AutoSkip(sbyte numberOfClipsToSkip)

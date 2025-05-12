@@ -1,4 +1,6 @@
-﻿using dotNetSony9Pin.Sony9Pin.CommandBlocks;
+﻿using System.Collections.Generic;
+using dotNetSony9Pin.Sony9Pin.CommandBlocks;
+using dotNetSony9Pin.Sony9Pin.CommandBlocks.TransportControl;
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 
@@ -10,6 +12,12 @@ public enum StopMode : byte
     ShowBlack = 0x3,
 }
 
+/// <summary>
+/// 0 = Off
+/// 1 = Freeze on last frame
+/// 2 = Freeze on next clip
+/// 3 = Show black
+/// </summary>
 public class SetStopMode : CommandBlock
 {
     /// <summary>

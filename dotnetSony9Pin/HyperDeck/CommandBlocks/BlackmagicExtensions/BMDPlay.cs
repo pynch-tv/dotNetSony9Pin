@@ -28,7 +28,7 @@ public class BMDPlay : CommandBlock
 
     /// <summary>
     /// 2 Bytes 16bit big endian signed integer, which  is the speed to play at, 
-    ///    where a value of 100 = 1.0x
+    ///    where a value of 0x0100 = 1.0x
     /// 1 Byte unsigned integer, which is the playback flags bitfield, where
     ///     bit 0 = Loop
     ///     bit 1 = SingleClip
@@ -45,7 +45,7 @@ public class BMDPlay : CommandBlock
         var data = new byte[5];
 
         // 2 Bytes 16bit big endian signed integer, which
-        // is the speed to play at, where a value of 100 = 1.0x
+        // is the speed to play at, where a value of 0x0100 = 1.0x
         var speedInBytes = ConvertToBigEndianInt16(speed);
         data[0] = speedInBytes[0];
         data[1] = speedInBytes[1];
@@ -63,6 +63,7 @@ public class BMDPlay : CommandBlock
         // 2 = Shuttle
         // 3 = Var
         data[3] = (byte)playBackType;
+
         // which is the scroll boolean flag, where 0 evaluates as
         // false and all other values evaluate as true.
         data[4] = scroll;

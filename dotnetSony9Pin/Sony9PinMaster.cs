@@ -304,10 +304,10 @@ public class Sony9PinMaster : Sony9PinBase
     /// </summary>
     /// <param name="port"></param>
     /// <returns></returns>
-    public override async Task<bool> Open(string port, ProtocolCallBack aa)
+    public override async Task<bool> Open(string port, ProtocolCallBack callback)
     {
         // step 1. Open the serial port
-        if (! await base.Open(port, aa))
+        if (! await base.Open(port, callback))
             return false;
 
         // Start the ReaderWorker so that we can send a Command

@@ -1,11 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using dotNetSony9Pin;
-using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 using System.IO.Ports;
 using System.Net.Sockets;
-using dotNetSony9Pin.HyperDeck.CommandBlocks.BlackmagicExtensions;
-using dotNetSony9Pin.Odetics.CommandBlocks.xxxRequest;
 using System.Collections.Specialized;
 
 SerialPort serialPort = new();
@@ -36,7 +33,20 @@ Stream OpenSocketStream(string hostPort)
     var host = parts[0];
     var port = int.Parse(parts[1]); // defauls to 9096
 
-    socket = new TcpClient(host, port);
+    try
+    {
+        socket = new TcpClient(host, port);
+    }
+    catch (SocketException ex)
+    {
+        Console.WriteLine(ex.Message);
+        return null;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return null;
+    }
 
     return socket.GetStream();
 }
@@ -46,27 +56,28 @@ async Task<NameValueCollection> Discover()
     return await Sony9PinMaster.DiscoverPorts(SerialPort.GetPortNames(), OpenSerialStream);
 }
 
-
+/*
 var ports = await Discover();
 if (ports.Count == 0)
 {
     Console.WriteLine("No devices found.");
     return;
 }
+*/
 
 var master = new Sony9PinMaster();
 
-master.StatusDataChanged += (sender, e) =>
+master.OnStatusDataChanged += (sender, e) =>
 {
     Console.WriteLine($"Status Data Changed: {e.StatusData}");
 };
 
-master.TimeDataChanged += (sender, e) =>
+master.OnTimeDataChanged += (sender, e) =>
 {
     Console.WriteLine($"Time Data Changed: {e.TimeCode}");
 };
 
-if (!await master.Open(ports.AllKeys[0], OpenSerialStream))
+if (!await master.Open("100.92.235.46:9096", OpenSocketStream))
 {
     Console.WriteLine("Failed to open port.");
     return;

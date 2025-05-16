@@ -19,6 +19,7 @@ public class Sony9PinMaster : Sony9PinBase
     public string model { get; internal set; } = "";
 
     public string manufacturer { get; private set; } = "Generic";
+
     public string manufacturerShort { get; private set; } = "Generic";
 
     private StatusData _statusData = new();
@@ -313,17 +314,29 @@ public class Sony9PinMaster : Sony9PinBase
         // Start the ReaderWorker so that we can send a Command
         // down the Sony9Pin path and get a result back
         _serialReaderWorker.RunWorkerAsync(argument: this);
+        // TODO: wait here until thread is fully ready
 
         if (_serialReaderWorker.IsBusy)
         {
             var dtr = await SendAsync(new DeviceTypeRequest());
 
-            var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
-            if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+            if (dtr == null)
+                return false;
+
+            if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
             {
-                manufacturer = deviceDescription.Manufacturer;
-                manufacturerShort = deviceDescription.ManufacturerShort;
-                model = deviceDescription.Model;
+                Debug.WriteLine($"Received Nak from port {port}");
+                return false;
+            }
+            else
+            {
+                var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
+                if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+                {
+                    manufacturer = deviceDescription.Manufacturer;
+                    manufacturerShort = deviceDescription.ManufacturerShort;
+                    model = deviceDescription.Model;
+                }
             }
         }
 
@@ -341,6 +354,8 @@ public class Sony9PinMaster : Sony9PinBase
     /// <returns></returns>
     public async Task<bool> Probe(string port, ProtocolCallBack callback)
     {
+        Debug.WriteLine($"Start probing port {port}");
+
         // step 1. Open the serial port
         if (! await base.Open(port, callback))
             return false;
@@ -353,12 +368,19 @@ public class Sony9PinMaster : Sony9PinBase
             if (null == dtr)
                 return false;
 
-            var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
-            if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+            if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
             {
-                manufacturer = deviceDescription.Manufacturer;
-                manufacturerShort = deviceDescription.ManufacturerShort;
-                model = deviceDescription.Model;
+                Debug.WriteLine($"Received Nak from port {port}");
+            }
+            else
+            {
+                var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
+                if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+                {
+                    manufacturer = deviceDescription.Manufacturer;
+                    manufacturerShort = deviceDescription.ManufacturerShort;
+                    model = deviceDescription.Model;
+                }
             }
         }
 
@@ -366,6 +388,8 @@ public class Sony9PinMaster : Sony9PinBase
             _serialReaderWorker.CancelAsync();
 
         base.Close();
+
+        Debug.WriteLine($"Stop probing port {port}");
 
         return true;
     }
@@ -518,7 +542,6 @@ public class Sony9PinMaster : Sony9PinBase
             if (_stream is { CanRead: false })
                 break;
 
-            //
             if (!_requestReady.WaitOne(1))
                 continue;
 
@@ -530,11 +553,11 @@ public class Sony9PinMaster : Sony9PinBase
             // Make sure we have an empty buffer
             inputBuffer.Clear();
 
+            Stopwatch stopwatch = new();
+            stopwatch.Start();
+
             try
             {
-                Stopwatch stopwatch = new();
-                stopwatch.Start();
-
                 // Read characters from the serialPort until we can create a 
                 // complete and valid CommandBlock
                 while (_stream is { CanRead: true })
@@ -544,7 +567,9 @@ public class Sony9PinMaster : Sony9PinBase
                         break; // No more data to read
                     inputBuffer.Add((byte)b);
 
-                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + 3) // add some margin
+                    Debug.WriteLine("inputBuffer: " + inputBuffer.ToString());
+
+                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + 9) // add some margin
                         throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
                     if (!CommandBlock.TryParse(inputBuffer, out var res))
@@ -553,16 +578,17 @@ public class Sony9PinMaster : Sony9PinBase
 
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
-                    //                    Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
-                    //                    Debug.Assert(0 == _serialPort.BytesToRead, "serial bytes remaining is not zero");
 
-                    //var btr = _serialPort.BytesToRead;
+                    Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
+                    //Debug.Assert(0 == _stream.BytesToRead, "serial bytes remaining is not zero");
+
+                    //var btr = _stream.BytesToRead;
                     //if (btr > 0)
                     //{
                     //    Debug.WriteLine($"{btr} bytes remaining to be read??");
                     //    for (int i = 0; i < btr; i++)
                     //    {
-                    //        Debug.WriteLine($"0x{_serialPort.ReadByte():X}");
+                    //        Debug.WriteLine($"0x{_stream.ReadByte():X}");
                     //    }
                     //}
 
@@ -577,8 +603,11 @@ public class Sony9PinMaster : Sony9PinBase
             }
             catch (TimeoutException ex)
             {
+                stopwatch.Stop();
+                Console.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
+
                 // Oei - a character couldn't be read within the time given.
-                Debug.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
 
                 isConnected = false;
 

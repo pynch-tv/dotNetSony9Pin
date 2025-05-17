@@ -264,15 +264,6 @@ public class Sony9PinMaster : Sony9PinBase
     /// <summary>
     /// 
     /// </summary>
-    /// <returns></returns>
-    public static string[] GetPortNames()
-    {
-        return SerialPort.GetPortNames();
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     public static async Task<NameValueCollection> DiscoverPorts(string[] serialPorts, ProtocolCallBack callback)
     {
         var activePorts = new NameValueCollection();

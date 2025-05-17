@@ -526,6 +526,10 @@ public class Sony9PinMaster : Sony9PinBase
         if (sender is not BackgroundWorker worker)
             throw new ArgumentNullException(nameof(sender));
 
+        var firstTimeDelay = 250;
+
+        Thread.CurrentThread.Priority = ThreadPriority.Highest; // Set the thread to high priority
+
         // Make sure we have an empty buffer
         List<byte>? inputBuffer = new(32);
 
@@ -562,7 +566,7 @@ public class Sony9PinMaster : Sony9PinBase
 
 //                    Debug.WriteLine("inputBuffer: " + inputBuffer.ToString());
 
-                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
+                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + firstTimeDelay)
                         throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
                     if (!CommandBlock.TryParse(inputBuffer, out var res))
@@ -574,6 +578,8 @@ public class Sony9PinMaster : Sony9PinBase
 
                     Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
                     //Debug.Assert(0 == _stream.BytesToRead, "serial bytes remaining is not zero");
+
+                    firstTimeDelay = 0;
 
                     //var btr = _stream.BytesToRead;
                     //if (btr > 0)
@@ -597,10 +603,7 @@ public class Sony9PinMaster : Sony9PinBase
             catch (TimeoutException ex)
             {
                 stopwatch.Stop();
-                Console.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
-
-                // Oei - a character couldn't be read within the time given.
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine($"TimeoutException, Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
 
                 isConnected = false;
 

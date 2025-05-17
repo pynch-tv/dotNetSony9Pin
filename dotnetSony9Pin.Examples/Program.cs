@@ -56,14 +56,12 @@ async Task<NameValueCollection> Discover()
     return await Sony9PinMaster.DiscoverPorts(SerialPort.GetPortNames(), OpenSerialStream);
 }
 
-/*
 var ports = await Discover();
 if (ports.Count == 0)
 {
     Console.WriteLine("No devices found.");
     return;
 }
-*/
 
 var master = new Sony9PinMaster();
 
@@ -77,7 +75,7 @@ master.OnTimeDataChanged += (sender, e) =>
     Console.WriteLine($"Time Data Changed: {e.TimeCode}");
 };
 
-if (!await master.Open("100.92.235.46:9096", OpenSocketStream))
+if (!await master.Open("COM5", OpenSerialStream))
 {
     Console.WriteLine("Failed to open port.");
     return;

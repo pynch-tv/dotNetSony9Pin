@@ -557,11 +557,12 @@ public class Sony9PinMaster : Sony9PinBase
                     var b = _stream.ReadByte();
                     if (b == -1)
                         break; // No more data to read
+
                     inputBuffer.Add((byte)b);
 
-                    Debug.WriteLine("inputBuffer: " + inputBuffer.ToString());
+//                    Debug.WriteLine("inputBuffer: " + inputBuffer.ToString());
 
-                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + 9) // add some margin
+                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
                         throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
                     if (!CommandBlock.TryParse(inputBuffer, out var res))

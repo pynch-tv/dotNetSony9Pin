@@ -1,72 +1,47 @@
-﻿using System.Diagnostics;
-
-namespace Pynch.Tools;
+﻿namespace Pynch.Tools;
 
 public abstract class RequestResponsePump<TRequest, TResponse>
 {
-    #region Events
+    private readonly SemaphoreSlim _mutex = new(1, 1);
 
-    private event EventHandler<TResponse>? ReceivedResponse;
+    private TaskCompletionSource<TResponse>? _currentTcs;
 
-    private void RaiseResponse(TResponse response)
+    public async Task<TResponse> SendAsync(TRequest request, int timeoutMs = 500, CancellationToken cancellationToken = default)
     {
-        var handler = ReceivedResponse;
-        handler?.Invoke(this, response);
-    }
-
-    #endregion
-
-    private readonly Lock _lock = new();
-
-    /// <summary>
-    /// Only Async Send method
-    /// </summary>
-    /// <param name="req"></param>
-    /// <returns></returns>
-    public virtual Task<TResponse> SendAsync(TRequest req)
-    {
-        lock (_lock)
+        await _mutex.WaitAsync(cancellationToken);
+        try
         {
-            Stopwatch stopwatch = new();
-            stopwatch.Start();
+            if (_currentTcs != null)
+                throw new InvalidOperationException("Only one request can be active at a time.");
 
-            var promise = new TaskCompletionSource<TResponse>();
+            _currentTcs = new TaskCompletionSource<TResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            ReceivedResponse += Handler;
+            Send(request); // fire request
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(timeoutMs);
 
-            Send(req);
+            await using var _ = timeoutCts.Token.Register(() => _currentTcs.TrySetCanceled());
 
-            var completed = Task.WhenAny(promise.Task, Task.Delay(500));
-            if (completed.Result != promise.Task)
-            {
-                promise.SetCanceled();
-
-                throw new TimeoutException("Timeout");
-            }
-
-            stopwatch.Stop();
-
-            return promise.Task;
-
-            void Handler(object? sender, TResponse e)
-            {
-                ReceivedResponse -= Handler;
-                promise.TrySetResult(e);
-            }
+            return await _currentTcs.Task;
+        }
+        catch (TaskCanceledException)
+        {
+            throw new TimeoutException("The response was not received in time.");
+        }
+        finally
+        {
+            _currentTcs = null;
+            _mutex.Release();
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    protected abstract void Send(TRequest req);
+    protected abstract void Send(TRequest request);
 
     /// <summary>
-    /// 
+    /// Call this when the response arrives asynchronously (e.g., from event, queue, etc.)
     /// </summary>
-    protected virtual void Received(TResponse res)
+    protected void Received(TResponse response)
     {
-        RaiseResponse(res);
+        _currentTcs?.TrySetResult(response);
     }
-
 }

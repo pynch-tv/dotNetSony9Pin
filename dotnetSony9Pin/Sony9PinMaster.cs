@@ -218,6 +218,7 @@ public class Sony9PinMaster : Sony9PinBase
     private readonly AutoResetEvent _workerThreadStopped = new(false);
 
     private readonly BackgroundWorker _serialReaderWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
+
     private readonly BackgroundWorker _idleWorker = new() { WorkerReportsProgress = false, WorkerSupportsCancellation = true };
 
     private readonly AutoResetEvent _requestReady = new(false);

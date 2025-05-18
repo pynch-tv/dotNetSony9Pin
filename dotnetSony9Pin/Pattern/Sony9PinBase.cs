@@ -14,7 +14,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <summary>
     /// Time in milliseconds
     /// </summary>
-    protected int SlaveResponseWithin { get; } = 9;
+    public int SlaveResponseWithin { get; set; } = 9;
 
     /// <summary>
     /// 

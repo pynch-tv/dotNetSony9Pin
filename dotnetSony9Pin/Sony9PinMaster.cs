@@ -115,10 +115,10 @@ public class Sony9PinMaster : Sony9PinBase
     /// <param name="deviceName">
     ///     The sender.
     /// </param>
-    protected virtual void RaiseDeviceTypeHandler(string deviceName)
+    protected virtual void RaiseDeviceTypeHandler(DeviceDescription? dd)
     {
         var handler = OnDeviceType;
-        handler?.Invoke(this, new DeviceTypeEventArgs(deviceName));
+        handler?.Invoke(this, new DeviceTypeEventArgs(dd));
     }
 
     protected virtual void RaiseConnectedChanged(bool connected)
@@ -307,29 +307,26 @@ public class Sony9PinMaster : Sony9PinBase
         _serialReaderWorker.RunWorkerAsync(argument: this);
         // TODO: wait here until thread is fully ready
 
-        if (_serialReaderWorker.IsBusy)
-        {
-            var dtr = await SendAsync(new DeviceTypeRequest());
+        _ = await SendAsync(new DeviceTypeRequest());
 
-            if (dtr == null)
-                return false;
+        //if (dtr == null)
+        //    return false;
 
-            if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
-            {
-                Debug.WriteLine($"Received Nak from port {port}");
-                return false;
-            }
-            else
-            {
-                var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
-                if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
-                {
-                    manufacturer = deviceDescription.Manufacturer;
-                    manufacturerShort = deviceDescription.ManufacturerShort;
-                    model = deviceDescription.Model;
-                }
-            }
-        }
+        //if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
+        //{
+        //    Debug.WriteLine($"Received Nak from port {port}");
+        //    return false;
+        //}
+        //else
+        //{
+        //    var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
+        //    if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
+        //    {
+        //        manufacturer = deviceDescription.Manufacturer;
+        //        manufacturerShort = deviceDescription.ManufacturerShort;
+        //        model = deviceDescription.Model;
+        //    }
+        //}
 
         // kick off the idle worker
         _idleWorker.RunWorkerAsync(argument: this);
@@ -459,14 +456,20 @@ public class Sony9PinMaster : Sony9PinBase
                     case Return.DeviceType:
                         {
                             var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
-                            string device;
                             if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
-                                device = Convert.ToHexString(res.Data);
+                            {
+                                manufacturer = "Generic";
+                                manufacturerShort = "Generic";
+                                model = Convert.ToHexString(res.Data);
+                            }
                             else
-                                device = deviceDescription.Model;
-                            model = device ?? "Unknown";
+                            {
+                                manufacturer = deviceDescription.Manufacturer;
+                                manufacturerShort = deviceDescription.ManufacturerShort;
+                                model = deviceDescription.Model;
+                            }
 
-                            RaiseDeviceTypeHandler(model);
+                            RaiseDeviceTypeHandler(deviceDescription);
                         }
                         break;
                 }
@@ -491,14 +494,11 @@ public class Sony9PinMaster : Sony9PinBase
                         var timeCode = new TimeCode(res.Data);
                         if (!timeCode.Equals(TimeCode))
                         {
-                            RaiseTimeDataChangingHandler((SenseReturn)res.Cmd2, TimeCode);
                             lock (this)
                             {
                                 TimeCode = timeCode;
                             }
-                            RaiseTimeDataChangedHandler((SenseReturn)res.Cmd2, TimeCode);
                         }
-                        RaiseTimeDataReceivedHandler((SenseReturn)res.Cmd2, TimeCode);
                         break;
 
                     case SenseReturn.StatusData:
@@ -525,7 +525,10 @@ public class Sony9PinMaster : Sony9PinBase
         if (sender is not BackgroundWorker worker)
             throw new ArgumentNullException(nameof(sender));
 
-        Thread.CurrentThread.Priority = ThreadPriority.Highest; // Set the thread to high priority
+        Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
+        // First time can take a little longer
+        SlaveResponseWithin = 100;
 
         const int BufferSize = 32;
         Span<byte> buffer = stackalloc byte[BufferSize];
@@ -568,18 +571,20 @@ public class Sony9PinMaster : Sony9PinBase
                     if (!CommandBlock.TryParse(buffer[..length], out var result))
                         continue;
 
-                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
-                        throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
-
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
 
-                    Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
+                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
+                        throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
+
+                    //Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
                     //Debug.Assert(0 == _stream.BytesToRead, "serial bytes remaining is not zero");
 
                     isConnected = true;
 
                     ProcessResponse(result!);
+
+                    SlaveResponseWithin = 9;
 
                     // We are done here, break back into the main loop to 
                     // try to take another CommandBlack

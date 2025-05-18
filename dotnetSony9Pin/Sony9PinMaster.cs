@@ -273,13 +273,17 @@ public class Sony9PinMaster : Sony9PinBase
             {
                 using var bvw75 = new Sony9PinMaster();
 
-                // Open does 2 things:
-                // 1.Open the port,
-                // 2.Probe for response
-                // 
-                // If both are successful, the port is considered active
-                if (await bvw75.Probe(serialPort, callback))
-                    activePorts.Add(serialPort, bvw75.model);
+                bvw75.OnDeviceType += (sender, e) =>
+                {
+                    Debug.WriteLine($"DeviceType from {serialPort} {e.DeviceDescription.Model}");
+                    activePorts.Add(serialPort, e.DeviceDescription.Model);
+                };
+                bvw75.OnNak += (sender, e) =>
+                { 
+                    Debug.WriteLine($"Nak from {serialPort}. Unplug and replug device");
+                };
+
+                await bvw75.Probe(serialPort, callback);
 
                 bvw75.Dispose();
             }
@@ -309,26 +313,6 @@ public class Sony9PinMaster : Sony9PinBase
 
         _ = await SendAsync(new DeviceTypeRequest());
 
-        //if (dtr == null)
-        //    return false;
-
-        //if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
-        //{
-        //    Debug.WriteLine($"Received Nak from port {port}");
-        //    return false;
-        //}
-        //else
-        //{
-        //    var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
-        //    if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
-        //    {
-        //        manufacturer = deviceDescription.Manufacturer;
-        //        manufacturerShort = deviceDescription.ManufacturerShort;
-        //        model = deviceDescription.Model;
-        //    }
-        //}
-
-        // kick off the idle worker
         _idleWorker.RunWorkerAsync(argument: this);
         _idleTimer.Enabled = true;
 
@@ -351,26 +335,8 @@ public class Sony9PinMaster : Sony9PinBase
         _serialReaderWorker.RunWorkerAsync(argument: this);
 
         // step 2. Send a DeviceTypeRequest
-        var dtr = await SendAsync(new DeviceTypeRequest());
-        {
-            if (null == dtr)
-                return false;
-
-            if (dtr.Cmd1 == CommandFunction.Return && dtr.Cmd2 == (byte)Return.Nak)
-            {
-                Debug.WriteLine($"Received Nak from port {port}");
-            }
-            else
-            {
-                var deviceId = (ushort)(dtr.Data[0] << 8 | dtr.Data[1]);
-                if (Device.Names.TryGetValue(deviceId, out var deviceDescription))
-                {
-                    manufacturer = deviceDescription.Manufacturer;
-                    manufacturerShort = deviceDescription.ManufacturerShort;
-                    model = deviceDescription.Model;
-                }
-            }
-        }
+        // response picked up by event handler in DiscoverPorts
+        _ = await SendAsync(new DeviceTypeRequest());
 
         if (_serialReaderWorker is { WorkerSupportsCancellation: true })
             _serialReaderWorker.CancelAsync();
@@ -582,9 +548,9 @@ public class Sony9PinMaster : Sony9PinBase
                     //Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
                     //Debug.Assert(0 == _stream.BytesToRead, "serial bytes remaining is not zero");
 
-                    isConnected = true;
-
                     ProcessResponse(result!);
+
+                    isConnected = true;
 
                     // We are done here, break back into the main loop to 
                     // try to take another CommandBlack

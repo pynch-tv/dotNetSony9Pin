@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using dotNetSony9Pin.Sony9Pin.CommandBlocks;
-using dotNetSony9Pin.Sony9Pin.CommandBlocks.TransportControl;
+﻿using dotNetSony9Pin.Sony9Pin.CommandBlocks;
 
 namespace dotNetSony9Pin.HyperDeck.CommandBlocks.AdvancedMediaProtocol;
 

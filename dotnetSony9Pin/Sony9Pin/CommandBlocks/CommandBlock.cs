@@ -57,16 +57,15 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <param name="buffer">
     ///     The buffer.
     /// </param>
-    public CommandBlock(byte[] buffer)
+    public CommandBlock(ReadOnlySpan<byte> buffer)
     {
         Debug.Assert(buffer.Length >= 3, "Buffer is not long enough");
 
         Cmd1DataCount = buffer[0];
         Cmd2 = buffer[1];
 
-        var dataCount = Cmd1DataCount & 0x0F;
-        Data = new byte[dataCount];
-        Buffer.BlockCopy(buffer, 2, Data, 0, dataCount);
+        int dataCount = Cmd1DataCount & 0x0F;
+        Data = buffer.Slice(2, dataCount).ToArray();
     }
 
     #endregion
@@ -113,15 +112,6 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     #region Public Methods and Operators
 
     /// <summary>
-    /// </summary>
-    /// <param name="cmd1DataCount"></param>
-    /// <returns></returns>
-    public static CommandFunction GetCmd1(byte cmd1DataCount)
-    {
-        return (CommandFunction)((cmd1DataCount & 0xF0) >> 4);
-    }
-
-    /// <summary>
     /// Converts the byte array representation of a commandblock. A return value indicates whether the conversion succeeded.
     /// </summary>
     /// <param name="s">A byte array containing a CommandBlock to convert.</param>
@@ -130,82 +120,54 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     ///  The conversion fails if the s parameter is null, is not of the correct format. This 
     /// parameter is passed uninitialized.</param>
     /// <returns>true if s was converted successfully; otherwise, false</returns>
-    public static bool TryParse(List<byte> s, out CommandBlock? result)
+    public static bool TryParse(ReadOnlySpan<byte> s, out CommandBlock? result)
     {
         result = null;
 
-        try
+        if (s.Length < 3)
+            return false;
+
+        byte cmd1DataCount = s[0];
+        int dataCount = GetDataCount(cmd1DataCount);
+        int blockLength = 2 + dataCount + 1;
+
+        if (s.Length < blockLength)
+            return false;
+
+        byte checksum = s[blockLength - 1];
+        int calculatedChecksum = 0;
+        for (int i = 0; i < blockLength - 1; i++)
         {
-            // We need a minimum 3 bytes to work with (Cmd1Datacount, Cmd2 and Checksum)
-            // See Cmd1 Block Format of the Sony 9-Pin remote protocol.
-            if (s.Count < 3)
-            {
-                return false; // No, wait for more Data to come in.
-            }
+            calculatedChecksum += s[i];
+        }
+        calculatedChecksum &= 0xFF;
 
-            //
-            //Protocol.Cmd1 cmd1;
-            //if (!Protocol.Cmd1.TryParse(s[0].ToString(), out cmd1))
-            //    throw new ArgumentException();
-
-            var cmd1 = GetCmd1(s[0]);
-
-            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-            // Parse content of the incoming Buffer
-            // CMD-1 is the upper 4 bits, DATA COUNT is the lower 4.
-
-            var dataCount = GetDataCount(s[0]);
-            var commandBlockLength = 2 + dataCount + 1;
-            // 2 = sizeof(Cmd1DataCount) + sizeof(Cmd2) + dataCount + sizeof(checksum)
-
-            // Do we have enough bytes to work with?
-            // (3 = length of cmd1datacount(1) + length of Cmd2(1) + length of checksum(1))
-            if (s.Count < commandBlockLength)
-            {
-                return false; // No, wait for more Data to come in.
-            }
-
-            var cmd2 = s[1];
-
-            var data = new byte[dataCount];
-            for (var i = 0; i < dataCount; i++) data[i] = s[2 + i];
-
-            // Check if the checksum is correct
-            var checkSum = s[commandBlockLength - 1];
-
-            // Checksum = lower eight bits of the sum of the bytes in the Cmd1 block
-            // (exclusing the checksum itself)
-            var calculatedCheckSum = 0;
-            for (var i = 0; i < commandBlockLength - 1; i++)
-            {
-                calculatedCheckSum += s[i];
-            }
-            calculatedCheckSum &= 0xFF;
-
-            if (calculatedCheckSum != checkSum)
-            {
-                result = new NakCommandBlock(NakCommandBlock.Nak.ChecksumError);
-                return true;
-            }
-
-            result = new CommandBlock(cmd1, dataCount, cmd2, data);
-
+        if (calculatedChecksum != checksum)
+        {
+            result = new NakCommandBlock(NakCommandBlock.Nak.ChecksumError);
             return true;
         }
-        catch (Exception)
-        {
-            return false;
-        }
+
+        byte cmd2 = s[1];
+        byte[] data = s.Slice(2, dataCount).ToArray();
+
+        result = new CommandBlock(GetCmd1(cmd1DataCount), dataCount, cmd2, data);
+        return true;
     }
 
     /// <summary>
     /// </summary>
     /// <param name="cmd1DataCount"></param>
     /// <returns></returns>
+    public static CommandFunction GetCmd1(byte cmd1DataCount)
+        => (CommandFunction)((cmd1DataCount & 0xF0) >> 4);
+
+    /// <summary>
+    /// </summary>
+    /// <param name="cmd1DataCount"></param>
+    /// <returns></returns>
     public static int GetDataCount(byte cmd1DataCount)
-    {
-        return cmd1DataCount & 0x0F;
-    }
+        => cmd1DataCount & 0x0F;
 
     /// <summary>
     /// </summary>
@@ -214,15 +176,10 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <returns></returns>
     public static byte ToCmd1DataCount(CommandFunction cmd1, int dataCount)
     {
-        var cmd1DataCount = (byte)0x00;
-
         if (dataCount > 0x0F)
-            throw new ArgumentOutOfRangeException(nameof(dataCount), $"Maximum length of dataCount is 15, supplied dataCount is {dataCount}");
+            throw new ArgumentOutOfRangeException(nameof(dataCount), "Maximum dataCount is 15");
 
-        cmd1DataCount = (byte)(cmd1DataCount & 0x0F | (int)cmd1 << 4);
-        cmd1DataCount = (byte)(cmd1DataCount & 0xF0 | dataCount);
-
-        return cmd1DataCount;
+        return (byte)(((byte)cmd1 << 4) | dataCount);
     }
 
     /// <summary>
@@ -232,11 +189,8 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <returns></returns>
     public int CompareTo(object? obj)
     {
-        var other = obj as CommandBlock;
-        Debug.Assert(other != null);
-
-        if (other.Equals(this))
-            return 0;
+        if (obj is CommandBlock other)
+            return Equals(other) ? 0 : 1;
 
         return 1;
     }
@@ -248,13 +202,15 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <returns></returns>
     public bool Equals(CommandBlock? other)
     {
-        if (null == other) return false;
+        if (other == null) return false;
+        return Cmd1DataCount == other.Cmd1DataCount &&
+               Cmd2 == other.Cmd2 &&
+               Data.Length == other.Data.Length; // Consider deeper comparison if needed
+    }
 
-        if (Cmd1DataCount != other.Cmd1DataCount) return false;
-        if (Cmd2 != other.Cmd2) return false;
-        if (Data.Length != other.Data.Length) return false;
-
-        return true;
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as CommandBlock);
     }
 
     /// <summary>
@@ -269,10 +225,10 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     public byte[] ToBytes()
     {
         var buffer = new byte[3 + Data.Length];
+
         buffer[0] = Cmd1DataCount;
         buffer[1] = Cmd2;
         Buffer.BlockCopy(Data, 0, buffer, 2, Data.Length);
-
         buffer[2 + Data.Length] = CheckSum;
 
         return buffer;
@@ -424,22 +380,16 @@ public class CommandBlock : IComparable, IEquatable<CommandBlock>
     /// <returns>
     ///     The <see cref="byte" />.
     /// </returns>
-    public byte CheckSum
+    private byte CheckSum
     {
         get
         {
-            var checksum = Cmd1DataCount;
-            checksum += Cmd2;
-            foreach (var b in Data)
-            {
-                checksum += b;
-            }
-
-            //        checksum &= 0xFF;
-
-            return checksum;
+            int sum = Cmd1DataCount + Cmd2;
+            foreach (var b in Data) sum += b;
+            return (byte)(sum & 0xFF);
         }
     }
+
 
     #endregion
 }

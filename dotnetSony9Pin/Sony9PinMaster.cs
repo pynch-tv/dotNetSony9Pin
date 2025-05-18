@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO.Ports;
 using dotNetSony9Pin.Pattern;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.Return;
@@ -462,7 +461,7 @@ public class Sony9PinMaster : Sony9PinBase
                             var deviceId = (ushort)(res.Data[0] << 8 | res.Data[1]);
                             string device;
                             if (!Device.Names.TryGetValue(deviceId, out var deviceDescription))
-                                device = BitConverter.ToString(res.Data).Replace("-", string.Empty);
+                                device = Convert.ToHexString(res.Data);
                             else
                                 device = deviceDescription.Model;
                             model = device ?? "Unknown";
@@ -526,12 +525,15 @@ public class Sony9PinMaster : Sony9PinBase
         if (sender is not BackgroundWorker worker)
             throw new ArgumentNullException(nameof(sender));
 
-        var firstTimeDelay = 250;
-
         Thread.CurrentThread.Priority = ThreadPriority.Highest; // Set the thread to high priority
 
-        // Make sure we have an empty buffer
-        List<byte>? inputBuffer = new(32);
+        const int BufferSize = 32;
+        Span<byte> buffer = stackalloc byte[BufferSize];
+        int length = 0;
+
+        _stream?.Flush();
+
+        Stopwatch stopwatch = new();
 
         while (!worker.CancellationPending)
         {
@@ -541,16 +543,10 @@ public class Sony9PinMaster : Sony9PinBase
             if (!_requestReady.WaitOne(1))
                 continue;
 
-            // Flush serial buffers, both in and out
-            lock (_lock)
-            {
-                _stream?.Flush();
-            }
             // Make sure we have an empty buffer
-            inputBuffer.Clear();
+            length = 0; // Clear buffer
 
-            Stopwatch stopwatch = new();
-            stopwatch.Start();
+            stopwatch.Restart();
 
             try
             {
@@ -562,16 +558,18 @@ public class Sony9PinMaster : Sony9PinBase
                     if (b == -1)
                         break; // No more data to read
 
-                    inputBuffer.Add((byte)b);
+                    if (length >= BufferSize)
+                        throw new InvalidOperationException("Buffer overflow while waiting for CommandBlock");
 
-//                    Debug.WriteLine("inputBuffer: " + inputBuffer.ToString());
+                    buffer[length++] = (byte)b;
 
-                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin + firstTimeDelay)
-                        throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
+                    //                    Debug.WriteLine($"inputBuffer Len: {inputBuffer.Count()} in {stopwatch.ElapsedMilliseconds}");
 
-                    if (!CommandBlock.TryParse(inputBuffer, out var res))
+                    if (!CommandBlock.TryParse(buffer[..length], out var result))
                         continue;
-                    if (null == res) continue;
+
+                    if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
+                        throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
                     // OK, we have enough characters for a valid CommandBlock.
                     stopwatch.Stop();
@@ -579,28 +577,16 @@ public class Sony9PinMaster : Sony9PinBase
                     Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
                     //Debug.Assert(0 == _stream.BytesToRead, "serial bytes remaining is not zero");
 
-                    firstTimeDelay = 0;
-
-                    //var btr = _stream.BytesToRead;
-                    //if (btr > 0)
-                    //{
-                    //    Debug.WriteLine($"{btr} bytes remaining to be read??");
-                    //    for (int i = 0; i < btr; i++)
-                    //    {
-                    //        Debug.WriteLine($"0x{_stream.ReadByte():X}");
-                    //    }
-                    //}
-
                     isConnected = true;
 
-                    ProcessResponse(res);
+                    ProcessResponse(result!);
 
                     // We are done here, break back into the main loop to 
                     // try to take another CommandBlack
                     break;
                 }
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException)
             {
                 stopwatch.Stop();
                 Debug.WriteLine($"TimeoutException, Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
@@ -608,6 +594,8 @@ public class Sony9PinMaster : Sony9PinBase
                 isConnected = false;
 
                 Received(null!); // return error object
+
+                _stream?.Flush();
             }
             catch (Exception)
             {

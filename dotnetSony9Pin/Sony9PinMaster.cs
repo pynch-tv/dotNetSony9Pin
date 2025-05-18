@@ -527,8 +527,7 @@ public class Sony9PinMaster : Sony9PinBase
 
         Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-        // First time can take a little longer
-        SlaveResponseWithin = 100;
+        const int ResponseWiggleTime = 75;
 
         const int BufferSize = 32;
         Span<byte> buffer = stackalloc byte[BufferSize];
@@ -575,6 +574,9 @@ public class Sony9PinMaster : Sony9PinBase
                     stopwatch.Stop();
 
                     if (stopwatch.ElapsedMilliseconds > SlaveResponseWithin)
+                        Debug.WriteLine($"Slave Response Time longer than expected: {stopwatch.ElapsedMilliseconds} ms");
+
+                    if (stopwatch.ElapsedMilliseconds > (SlaveResponseWithin + ResponseWiggleTime))
                         throw new TimeoutException($"Response took over 9ms. {stopwatch.ElapsedMilliseconds}");
 
                     //Debug.WriteLine($"Slave Response within: {stopwatch.ElapsedMilliseconds} ms");
@@ -583,8 +585,6 @@ public class Sony9PinMaster : Sony9PinBase
                     isConnected = true;
 
                     ProcessResponse(result!);
-
-                    SlaveResponseWithin = 9;
 
                     // We are done here, break back into the main loop to 
                     // try to take another CommandBlack

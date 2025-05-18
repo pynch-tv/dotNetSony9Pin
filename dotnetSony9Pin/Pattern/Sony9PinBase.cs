@@ -3,7 +3,7 @@ using Pynch.Tools;
 
 namespace dotNetSony9Pin.Pattern;
 
-public delegate Stream ProtocolCallBack(string port);
+public delegate Task<Stream?> ProtocolCallBack(string port);
 
 public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBlock>, IDisposable
 {
@@ -14,7 +14,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <summary>
     /// Time in milliseconds
     /// </summary>
-    public int SlaveResponseWithin { get; set; } = 9;
+    protected int SlaveResponseWithin { get; } = 9;
 
     /// <summary>
     /// 
@@ -23,7 +23,7 @@ public abstract class Sony9PinBase : RequestResponsePump<CommandBlock, CommandBl
     /// <param name="callback"></param>
     public virtual async Task<bool> Open(string port, ProtocolCallBack callback)
     {
-        _stream = callback(port);
+        _stream = await callback(port);
         if (_stream == null) 
             return false;
 

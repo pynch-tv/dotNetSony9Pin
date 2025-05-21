@@ -608,29 +608,40 @@ public class Sony9PinMaster : Sony9PinBase
             // After last good CommandBlock is received, await for idle.
             // Then send idle command
 
-            if (!_fireIdleCommand.WaitOne(1))
-                continue;
-
-            Debug.Assert(_serialReaderWorker.IsBusy, "SerialReaderWorker is busy");
-            Debug.Assert(_serialReaderWorker.CancellationPending == false, "SerialReaderWorker CancellationPending");
-
-            switch (_currentTimeSenseOrStatusSense)
+            try
             {
-                case 0:
-                {
-                    _ = SendAsync(new StatusSense()).Result;
-                    break;
-                }
-                case 1:
-                {
-                    _ = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
-                    break;
-                }
-            }
+                if (!_fireIdleCommand.WaitOne(1))
+                    continue;
 
-            _currentTimeSenseOrStatusSense++;
-            if (_currentTimeSenseOrStatusSense > 1)
-                _currentTimeSenseOrStatusSense = 0;
+                Debug.Assert(_serialReaderWorker.IsBusy, "SerialReaderWorker is busy");
+                Debug.Assert(_serialReaderWorker.CancellationPending == false, "SerialReaderWorker CancellationPending");
+
+                switch (_currentTimeSenseOrStatusSense)
+                {
+                    case 0:
+                        {
+                            _ = SendAsync(new StatusSense()).Result;
+                            break;
+                        }
+                    case 1:
+                        {
+                            _ = SendAsync(new CurrentTimeSense(TimeSenseRequest.LtcTime)).Result;
+                            break;
+                        }
+                }
+
+                _currentTimeSenseOrStatusSense++;
+                if (_currentTimeSenseOrStatusSense > 1)
+                    _currentTimeSenseOrStatusSense = 0;
+            }
+            catch (AggregateException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         Debug.WriteLine("Sony9PinMaster Stopped IdleReader");

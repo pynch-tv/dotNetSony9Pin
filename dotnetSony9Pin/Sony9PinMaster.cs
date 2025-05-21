@@ -10,6 +10,7 @@ using dotNetSony9Pin.Sony9Pin.CommandBlocks.SenseReturn;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.StatusData;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.SystemControl;
 using dotNetSony9Pin.Sony9Pin.CommandBlocks.TimeSenseRequest;
+using dotNetSony9Pin.Sony9Pin.CommandBlocks.TransportControl;
 
 namespace dotNetSony9Pin;
 
@@ -662,5 +663,22 @@ public class Sony9PinMaster : Sony9PinBase
                 _stream.Write(bytes, 0, bytes.Length);
         }
     }
+
+
+    #region CommandBlocks
+
+    public virtual CommandBlock Play() { return new Play(); }
+    public virtual CommandBlock Stop() { return new Stop(); }
+    public virtual CommandBlock Rewind() { return new Rewind(); }
+    public virtual CommandBlock CueUpWithData(TimeCode tc) { return new CueUpWithData(tc); }
+    public virtual CommandBlock CueUpWithData(string clipId) { throw new NotImplementedException(); }
+    public virtual CommandBlock JogFwd(byte data1) { return new JogFwd(data1); }
+    public virtual CommandBlock JogRev(byte data1) { return new JogRev(data1); }
+    public virtual CommandBlock ShuttleFwd(byte data1) { return new ShuttleFwd(data1); }
+    public virtual CommandBlock ShuttleRev(byte data1) { return new ShuttleRev(data1); }
+    public virtual CommandBlock VarFwd(byte data1) { return new VarFwd(data1); }
+    public virtual CommandBlock VarRev(byte data1) { return new VarRev(data1); }
+
+    #endregion
 
 }

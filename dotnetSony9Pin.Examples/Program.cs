@@ -9,7 +9,7 @@ SerialPort serialPort = new();
 
 TcpClient socket = new(); 
 
-Stream OpenSerialStream(string port)
+async Task<Stream> OpenSerialStream(string port)
 {
     serialPort.PortName = port;
     serialPort.BaudRate = 38400;
@@ -27,7 +27,7 @@ Stream OpenSerialStream(string port)
     return serialPort.BaseStream;
 }
 
-Stream OpenSocketStream(string hostPort)
+async Task<Stream> OpenSocketStream(string hostPort)
 {
     var parts = hostPort.Split(':');
     var host = parts[0];
